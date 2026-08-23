@@ -1,0 +1,222 @@
+const brl = (v) =>
+  (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+const messagesEl = document.getElementById("messages");
+const form = document.getElementById("chat-form");
+const input = document.getElementById("chat-input");
+
+const STATUS_LABEL = {
+  pago: "Pago",
+  parcial: "Parcial",
+  aberto: "Em aberto",
+};
+
+function addBubble(text, who) {
+  const div = document.createElement("div");
+  div.className = `bubble ${who}`;
+  div.textContent = text.replace(/\*\*(.*?)\*\*/g, "$1");
+  messagesEl.appendChild(div);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function renderList(el, items, emptyText) {
+  el.innerHTML = "";
+  if (!items.length) {
+    const p = document.createElement("p");
+    p.className = "empty";
+    p.textContent = emptyText;
+    el.appendChild(p);
+    return;
+  }
+  for (const item of items) {
+    const li = document.createElement("li");
+    li.textContent = item;
+    el.appendChild(li);
+  }
+}
+
+function paintSummary(s) {
+  document.getElementById("month-label").textContent = `${String(s.mes).padStart(2, "0")}/${s.ano}`;
+  document.getElementById("m-entrou").textContent = brl(s.entrou);
+  document.getElementById("m-saiu").textContent = brl(s.saiu);
+  document.getElementById("m-conta").textContent = brl(s.sobrou_conta);
+  document.getElementById("m-verdade").textContent = brl(s.sobrou_verdade);
+  document.getElementById("m-pessoal").textContent = brl(s.por_lente.pessoal.saldo);
+  document.getElementById("m-prof").textContent = brl(s.por_lente.profissional.saldo);
+  document.getElementById("m-receber").textContent = brl(s.a_receber);
+  document.getElementById("m-pagar").textContent = brl(s.a_pagar);
+
+  renderList(
+    document.getElementById("list-receber"),
+    (s.trabalhos_abertos || []).map(
+      (t) =>
+        `${t.data} · ${t.tipo}${t.pagador ? " · " + t.pagador : ""} · ${brl(t.saldo_receber)}`
+    ),
+    "Nada em aberto"
+  );
+
+  renderList(
+    document.getElementById("list-pagar"),
+    (s.previstos || [])
+      .filter((l) => l.tipo === "saida")
+      .map((l) => `${l.data_caixa} · ${l.categoria} · ${brl(l.valor)}`),
+    "Nenhuma conta prevista"
+  );
+
+  renderList(
+    document.getElementById("list-lanc"),
+    (s.lancamentos || []).map(
+      (l) =>
+        `${l.data_caixa} · ${l.tipo} · ${l.lente} · ${l.categoria} · ${brl(l.valor)}`
+    ),
+    "Sem lançamentos neste mês"
+  );
+}
+
+function paintTrabalhos(data) {
+  const t = data.totais || {};
+  document.getElementById("t-esperado").textContent = brl(t.esperado);
+  document.getElementById("t-recebido").textContent = brl(t.recebido);
+  document.getElementById("t-aberto").textContent = brl(t.em_aberto);
+
+  const statusEl = document.getElementById("trabalhos-status");
+  statusEl.innerHTML = `
+    <span class="badge pago">${t.pago || 0} pagos</span>
+    <span class="badge parcial">${t.parcial || 0} parciais</span>
+    <span class="badge aberto">${t.aberto || 0} em aberto</span>
+  `;
+
+  const body = document.getElementById("trabalhos-body");
+  const empty = document.getElementById("trabalhos-empty");
+  const rows = data.trabalhos || [];
+  body.innerHTML = "";
+  empty.hidden = rows.length > 0;
+
+  for (const item of rows) {
+    const tr = document.createElement("tr");
+    const localPagador = [item.local, item.pagador].filter(Boolean).join(" · ") || "—";
+    tr.innerHTML = `
+      <td>${item.data}</td>
+      <td>${item.tipo}</td>
+      <td>${localPagador}</td>
+      <td>${brl(item.valor_esperado)}</td>
+      <td>${brl(item.valor_recebido)}</td>
+      <td><span class="badge ${item.status_recebimento}">${STATUS_LABEL[item.status_recebimento] || item.status_recebimento}</span></td>
+    `;
+    body.appendChild(tr);
+  }
+}
+
+function paintGastos(data) {
+  document.getElementById("g-total").textContent = brl(data.total_periodo);
+  document.getElementById("g-pessoal").textContent = brl(data.por_lente.pessoal || 0);
+  document.getElementById("g-prof").textContent = brl(
+    (data.por_lente.profissional || 0) + (data.por_lente.misto || 0)
+  );
+  document.getElementById("g-meses").textContent = String(data.meses);
+
+  const bars = document.getElementById("gastos-bars");
+  bars.innerHTML = "";
+  const max = data.max_mes || 1;
+
+  for (const p of data.periodos || []) {
+    const col = document.createElement("div");
+    col.className = "bar-col";
+    const hPessoal = Math.round((p.pessoal / max) * 140);
+    const hProf = Math.round((p.profissional / max) * 140);
+    col.innerHTML = `
+      <div class="bar-value">${p.total ? brl(p.total).replace(/\s/g, "\u00a0") : "—"}</div>
+      <div class="bar-stack" title="${p.label}: ${brl(p.total)}">
+        <div class="bar-seg profissional" style="height:${hProf}px"></div>
+        <div class="bar-seg pessoal" style="height:${hPessoal}px"></div>
+      </div>
+      <div class="bar-label">${p.label}</div>
+    `;
+    bars.appendChild(col);
+  }
+
+  const cats = document.getElementById("gastos-cats");
+  cats.innerHTML = "";
+  const catMax = (data.categorias[0] && data.categorias[0].total) || 1;
+  if (!(data.categorias || []).length) {
+    const p = document.createElement("p");
+    p.className = "empty";
+    p.textContent = "Sem gastos no período.";
+    cats.appendChild(p);
+    return;
+  }
+  for (const c of data.categorias) {
+    const li = document.createElement("li");
+    const pct = Math.max(4, Math.round((c.total / catMax) * 100));
+    li.innerHTML = `
+      <span>${c.categoria}</span>
+      <strong>${brl(c.total)}</strong>
+      <div class="cat-track"><div class="cat-fill" style="width:${pct}%"></div></div>
+    `;
+    cats.appendChild(li);
+  }
+}
+
+async function refreshAll() {
+  const [summaryRes, trabalhosRes, gastosRes] = await Promise.all([
+    fetch("/api/summary"),
+    fetch("/api/trabalhos"),
+    fetch("/api/gastos?meses=6"),
+  ]);
+  paintSummary(await summaryRes.json());
+  paintTrabalhos(await trabalhosRes.json());
+  paintGastos(await gastosRes.json());
+}
+
+function setView(name) {
+  document.querySelectorAll(".view-btn").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.view === name);
+  });
+  document.querySelectorAll(".view").forEach((panel) => {
+    const on = panel.id === `view-${name}`;
+    panel.hidden = !on;
+    panel.classList.toggle("active", on);
+  });
+}
+
+document.querySelectorAll(".view-btn").forEach((btn) => {
+  btn.addEventListener("click", () => setView(btn.dataset.view));
+});
+
+async function sendMessage(text) {
+  addBubble(text, "user");
+  const res = await fetch("/api/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message: text }),
+  });
+  const data = await res.json();
+  addBubble(data.reply || "Sem resposta.", "bot");
+  if (data.summary) paintSummary(data.summary);
+  await refreshAll();
+}
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = "";
+  input.focus();
+  try {
+    await sendMessage(text);
+  } catch (err) {
+    addBubble("Falha ao falar com o servidor. Ele está rodando?", "bot");
+  }
+});
+
+(async function boot() {
+  try {
+    await refreshAll();
+  } catch (err) {
+    addBubble("Não consegui carregar os dados. Confira se o servidor está no ar.", "bot");
+  }
+  addBubble(
+    "Olá. Sou o Monitor Financeiro.\nUse as abas para ver trabalhos e gastos por período.\nNo chat: “sou eu, começo agora” ou um lançamento — eu confirmo antes de gravar.",
+    "bot"
+  );
+})();

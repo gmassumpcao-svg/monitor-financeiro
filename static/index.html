@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Monitor Financeiro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <div class="brand-block">
+        <p class="brand">Monitor <em>Financeiro</em></p>
+        <p class="tag">Vida inteira · casa + trabalho</p>
+      </div>
+      <nav class="views" aria-label="Visões">
+        <button type="button" class="view-btn active" data-view="caixa">Caixa</button>
+        <button type="button" class="view-btn" data-view="trabalhos">Trabalhos realizados</button>
+        <button type="button" class="view-btn" data-view="gastos">Gastos por período</button>
+      </nav>
+      <p id="month-label" class="month-label"></p>
+    </header>
+
+    <main class="layout">
+      <section class="panel data" aria-label="Painel de dados">
+        <!-- Caixa -->
+        <div id="view-caixa" class="view active">
+          <h2>Caixa do mês</h2>
+          <div class="metrics">
+            <div>
+              <span class="label">Entrou</span>
+              <strong id="m-entrou">—</strong>
+            </div>
+            <div>
+              <span class="label">Saiu</span>
+              <strong id="m-saiu">—</strong>
+            </div>
+            <div class="highlight">
+              <span class="label">Sobrou na conta</span>
+              <strong id="m-conta">—</strong>
+            </div>
+            <div class="highlight truth">
+              <span class="label">Sobrou de verdade</span>
+              <strong id="m-verdade">—</strong>
+            </div>
+          </div>
+          <div class="lenses">
+            <div>
+              <span class="label">Pessoal</span>
+              <strong id="m-pessoal">—</strong>
+            </div>
+            <div>
+              <span class="label">Profissional</span>
+              <strong id="m-prof">—</strong>
+            </div>
+          </div>
+          <div class="lists">
+            <div>
+              <h3>A receber <span id="m-receber" class="muted"></span></h3>
+              <ul id="list-receber"></ul>
+            </div>
+            <div>
+              <h3>A pagar <span id="m-pagar" class="muted"></span></h3>
+              <ul id="list-pagar"></ul>
+            </div>
+          </div>
+          <div>
+            <h3>Lançamentos do mês</h3>
+            <ul id="list-lanc"></ul>
+          </div>
+        </div>
+
+        <!-- Trabalhos realizados -->
+        <div id="view-trabalhos" class="view" hidden>
+          <div class="view-head">
+            <h2>Trabalhos realizados</h2>
+            <p class="view-sub">Consultas, plantões e procedimentos — e o que já foi pago</p>
+          </div>
+          <div class="metrics three" id="trabalhos-metrics">
+            <div>
+              <span class="label">Esperado</span>
+              <strong id="t-esperado">—</strong>
+            </div>
+            <div class="highlight mint">
+              <span class="label">Recebido</span>
+              <strong id="t-recebido">—</strong>
+            </div>
+            <div class="highlight">
+              <span class="label">Em aberto</span>
+              <strong id="t-aberto">—</strong>
+            </div>
+          </div>
+          <div class="status-row" id="trabalhos-status"></div>
+          <div class="table-wrap">
+            <table class="data-table" aria-label="Lista de trabalhos">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Tipo</th>
+                  <th>Local / pagador</th>
+                  <th>Esperado</th>
+                  <th>Recebido</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="trabalhos-body"></tbody>
+            </table>
+            <p id="trabalhos-empty" class="empty" hidden>Nenhum trabalho cadastrado ainda. Diga no chat: “Fiz plantão dia …”.</p>
+          </div>
+        </div>
+
+        <!-- Gastos por período -->
+        <div id="view-gastos" class="view" hidden>
+          <div class="view-head">
+            <h2>Gastos por período</h2>
+            <p class="view-sub">Últimos 6 meses · pessoal e profissional</p>
+          </div>
+          <div class="metrics">
+            <div class="highlight">
+              <span class="label">Total no período</span>
+              <strong id="g-total">—</strong>
+            </div>
+            <div>
+              <span class="label">Pessoal</span>
+              <strong id="g-pessoal">—</strong>
+            </div>
+            <div>
+              <span class="label">Profissional</span>
+              <strong id="g-prof">—</strong>
+            </div>
+            <div class="highlight mint">
+              <span class="label">Meses</span>
+              <strong id="g-meses">6</strong>
+            </div>
+          </div>
+          <h3>Por mês</h3>
+          <div id="gastos-bars" class="bars" aria-label="Gráfico de gastos mensais"></div>
+          <div class="legend">
+            <span><i class="pessoal"></i>Pessoal</span>
+            <span><i class="profissional"></i>Profissional</span>
+          </div>
+          <h3>Por categoria</h3>
+          <ul id="gastos-cats" class="cat-list"></ul>
+        </div>
+      </section>
+
+      <section class="panel chat" aria-label="Agente">
+        <div class="chat-head">
+          <h2>Agente</h2>
+          <span class="pill">confirma antes de gravar</span>
+        </div>
+        <div id="messages" class="messages" role="log" aria-live="polite"></div>
+        <form id="chat-form" class="composer">
+          <input
+            id="chat-input"
+            type="text"
+            autocomplete="off"
+            placeholder='Ex.: Caiu 3600 da Unimed referente a junho'
+            aria-label="Mensagem para o agente"
+          />
+          <button type="submit">Enviar</button>
+        </form>
+        <p class="hint">Responda <strong>sim</strong> ou <strong>não</strong> para confirmar.</p>
+      </section>
+    </main>
+  </div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
