@@ -10,23 +10,36 @@
   <link rel="stylesheet" href="./styles.css" />
 </head>
 <body>
-  <div id="setup-overlay" class="setup-overlay" hidden>
+  <div id="setup-overlay" class="setup-overlay">
     <div class="setup-card">
-      <h2>Conectar Google Sheets</h2>
-      <p class="view-sub">Cole a URL do Apps Script (Web App) e o token. Os valores ficam só neste navegador.</p>
-      <div class="field">
-        <label for="cfg-url">URL da API (/exec)</label>
-        <input id="cfg-url" type="url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off" />
-      </div>
-      <div class="field">
-        <label for="cfg-token">Token (API_TOKEN)</label>
-        <input id="cfg-token" type="password" placeholder="seu segredo" autocomplete="off" />
-      </div>
-      <p id="setup-error" class="hint" style="color:#9a4a22" hidden></p>
-      <div class="modal-actions">
-        <button type="button" class="btn-primary" id="cfg-save">Salvar e abrir</button>
-      </div>
-      <p class="hint">Guia completo no README do repositório (pasta <code>gas/</code>).</p>
+      <h2>Abra o Monitor pelo Apps Script</h2>
+      <p class="view-sub">
+        O GitHub Pages <strong>não consegue</strong> conectar à sua planilha enquanto o script pedir login do Google
+        (erro <em>Failed to fetch</em>).
+      </p>
+      <p class="view-sub">
+        <strong>No celular / PC:</strong> entre na sua conta Google e abra a URL do app que termina em
+        <code>/exec</code> (a mesma da implantação do Apps Script). Favorite essa URL.
+      </p>
+      <p class="hint">
+        Não cole URL/token aqui. Depois de atualizar os arquivos HTML no Apps Script e fazer
+        <strong>Nova versão</strong> da implantação, a tela do Monitor aparece ao abrir o <code>/exec</code>.
+      </p>
+      <details style="margin-top:14px">
+        <summary class="hint" style="cursor:pointer">Avançado: forçar conexão via Pages (só se acesso for “Qualquer pessoa” anônimo)</summary>
+        <div class="field">
+          <label for="cfg-url">URL da API (/exec)</label>
+          <input id="cfg-url" type="url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off" />
+        </div>
+        <div class="field">
+          <label for="cfg-token">Token (API_TOKEN)</label>
+          <input id="cfg-token" type="password" placeholder="seu segredo" autocomplete="off" />
+        </div>
+        <p id="setup-error" class="hint" style="color:#9a4a22" hidden></p>
+        <div class="modal-actions">
+          <button type="button" class="btn-primary" id="cfg-save">Tentar mesmo assim</button>
+        </div>
+      </details>
     </div>
   </div>
 

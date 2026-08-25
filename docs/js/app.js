@@ -182,33 +182,40 @@ document.querySelectorAll(".view-btn").forEach((btn) => {
 
 function showSetup(force) {
   const cfg = MonitorApi.getConfig();
-  document.getElementById("cfg-url").value = cfg.apiUrl || "";
-  document.getElementById("cfg-token").value = cfg.apiToken || "";
-  document.getElementById("setup-error").hidden = true;
+  const urlEl = document.getElementById("cfg-url");
+  const tokenEl = document.getElementById("cfg-token");
+  if (urlEl) urlEl.value = cfg.apiUrl || "";
+  if (tokenEl) tokenEl.value = cfg.apiToken || "";
+  const err = document.getElementById("setup-error");
+  if (err) err.hidden = true;
   if (force || !MonitorApi.configured()) setupOverlay.hidden = false;
 }
 
 document.getElementById("btn-config").addEventListener("click", () => showSetup(true));
 
-document.getElementById("cfg-save").addEventListener("click", async () => {
-  const url = document.getElementById("cfg-url").value.trim();
-  const token = document.getElementById("cfg-token").value.trim();
-  const err = document.getElementById("setup-error");
-  if (!url || !token) {
-    err.textContent = "Preencha URL e token.";
-    err.hidden = false;
-    return;
-  }
-  MonitorApi.saveConfig(url, token);
-  try {
-    await refreshAll();
-    setupOverlay.hidden = true;
-    addBubble("Conectado à planilha. Pode lançar pelo formulário ou pelo chat.", "bot");
-  } catch (e) {
-    err.textContent = `Falha ao conectar: ${e.message}. Depois de atualizar o Code.gs, faça Nova versão na implantação (acesso: Qualquer pessoa).`;
-    err.hidden = false;
-  }
-});
+const cfgSave = document.getElementById("cfg-save");
+if (cfgSave) {
+  cfgSave.addEventListener("click", async () => {
+    const url = document.getElementById("cfg-url").value.trim();
+    const token = document.getElementById("cfg-token").value.trim();
+    const err = document.getElementById("setup-error");
+    if (!url || !token) {
+      err.textContent = "Preencha URL e token.";
+      err.hidden = false;
+      return;
+    }
+    MonitorApi.saveConfig(url, token);
+    try {
+      await refreshAll();
+      setupOverlay.hidden = true;
+      addBubble("Conectado à planilha. Pode lançar pelo formulário ou pelo chat.", "bot");
+    } catch (e) {
+      err.textContent =
+        `Falha: ${e.message}. Solução: abra a URL /exec no navegador logado no Google (não use esta página do GitHub Pages).`;
+      err.hidden = false;
+    }
+  });
+}
 
 function openModal(kind) {
   document.getElementById("f-kind").value = kind;
