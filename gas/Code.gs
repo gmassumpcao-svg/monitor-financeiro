@@ -1,17 +1,16 @@
 /**
- * Monitor Financeiro — API sobre Google Sheets
+ * Monitor Financeiro — App + API sobre Google Sheets
  *
- * Setup (uma vez):
- * 1. Crie uma planilha Google Sheets vazia.
- * 2. Extensões > Apps Script > cole este arquivo.
- * 3. Propriedades do script (engrenagem > Propriedades do script):
- *      API_TOKEN = um segredo longo (ex.: openssl rand -hex 24)
- *      SPREADSHEET_ID = id da planilha (da URL /d/ID/edit)
- * 4. Execute a função setupSheets() uma vez (autorizar).
- * 5. Implantar > Nova implantação > App da Web
+ * MODO RECOMENDADO (celular):
+ * 1. Cole Code.gs e os arquivos HTML (Index, Styles, ApiJs, SummaryJs, AgentJs, AppJs)
+ * 2. Propriedades: SPREADSHEET_ID + API_TOKEN
+ * 3. Execute setupSheets() uma vez
+ * 4. Implantar > App da Web
  *      Executar como: Eu
- *      Quem tem acesso: Qualquer pessoa
- * 6. Copie a URL da implantação para docs/js/config.js
+ *      Quem tem acesso: Qualquer pessoa com Conta do Google  (ou “Só eu”)
+ * 5. Abra a URL /exec no celular (logado no Google) — é o próprio app
+ *
+ * GitHub Pages só funciona se o acesso for “Qualquer pessoa” (anônimo).
  */
 
 var SHEETS = {
@@ -42,6 +41,10 @@ var SHEETS = {
   meta: ["key", "value"],
 };
 
+function include(filename) {
+  return HtmlService.createHtmlOutputFromFile(filename).getContent();
+}
+
 function setupSheets() {
   var ss = getSpreadsheet_();
   Object.keys(SHEETS).forEach(function (name) {
@@ -50,7 +53,6 @@ function setupSheets() {
     sh.clear();
     sh.getRange(1, 1, 1, SHEETS[name].length).setValues([SHEETS[name]]);
   });
-  // remove default Sheet1 if empty
   var def = ss.getSheetByName("Página1") || ss.getSheetByName("Sheet1");
   if (def && ss.getSheets().length > 1) {
     try {
@@ -64,15 +66,25 @@ function setupSheets() {
 
 function doGet(e) {
   var params = (e && e.parameter) || {};
-  // payload/name podem vir como JSON string na query (JSONP)
-  params = normalizeParams_(params);
-  var result = dispatch_(params);
-  if (params.callback) {
-    return ContentService.createTextOutput(
-      params.callback + "(" + JSON.stringify(result) + ")"
-    ).setMimeType(ContentService.MimeType.JAVASCRIPT);
+
+  // API externa (JSON / JSONP) — só funciona com acesso anônimo “Qualquer pessoa”
+  if (params.action) {
+    params = normalizeParams_(params);
+    var result = dispatch_(params);
+    if (params.callback) {
+      return ContentService.createTextOutput(
+        params.callback + "(" + JSON.stringify(result) + ")"
+      ).setMimeType(ContentService.MimeType.JAVASCRIPT);
+    }
+    return json_(result);
   }
-  return json_(result);
+
+  // App embutido — abre no celular logado no Google (sem CORS)
+  return HtmlService.createTemplateFromFile("Index")
+    .evaluate()
+    .setTitle("Monitor Financeiro")
+    .addMetaTag("viewport", "width=device-width, initial-scale=1")
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
 function doPost(e) {
@@ -86,6 +98,16 @@ function doPost(e) {
   return json_(dispatch_(normalizeParams_(body)));
 }
 
+/**
+ * Chamado pelo frontend via google.script.run (app embutido).
+ * Injeta o token automaticamente — não expor no HTML.
+ */
+function apiCall(req) {
+  req = req || {};
+  req.token = PropertiesService.getScriptProperties().getProperty("API_TOKEN");
+  return dispatch_(normalizeParams_(req));
+}
+
 function normalizeParams_(req) {
   var out = {};
   for (var k in req) {
@@ -97,15 +119,12 @@ function normalizeParams_(req) {
     } else {
       try {
         out.payload = JSON.parse(out.payload);
-      } catch (err) {
-        // mantém string se não for JSON
-      }
+      } catch (err) {}
     }
   }
   return out;
 }
 
-/** Retorna objeto JS (não ContentService). */
 function dispatch_(req) {
   try {
     if (!checkToken_(req.token)) {
