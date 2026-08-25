@@ -37,6 +37,8 @@ Há **duas formas** de usar:
 4. Na primeira visita, cole a **URL `/exec`** e o **API_TOKEN** (salvos só no navegador via `localStorage`).
 5. Use **+ Ganho / + Gasto / + Trabalho** ou o chat (`Recebi 4200 de plantão` → **sim**).
 
+Se aparecer **Failed to fetch**: atualize o `Code.gs` no Apps Script (versão com suporte a JSONP), faça **Implantar → Gerenciar implantações → ✏️ → Nova versão**, confira acesso **Qualquer pessoa** e URL terminando em `/exec`. Depois faça `git push` deste repositório para o Pages atualizar.
+
 Arquivos do site: pasta [`docs/`](docs/).  
 Exemplo de config (sem segredos): [`docs/js/config.example.js`](docs/js/config.example.js).
 
