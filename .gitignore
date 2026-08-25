@@ -8,3 +8,5 @@ data/*.json
 .env
 *.egg-info/
 .pytest_cache/
+# Segredos locais (use config.example.js + localStorage no browser)
+docs/js/config.local.js

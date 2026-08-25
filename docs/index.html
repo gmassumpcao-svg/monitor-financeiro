@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Monitor Financeiro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="./styles.css" />
+</head>
+<body>
+  <div id="setup-overlay" class="setup-overlay" hidden>
+    <div class="setup-card">
+      <h2>Conectar Google Sheets</h2>
+      <p class="view-sub">Cole a URL do Apps Script (Web App) e o token. Os valores ficam só neste navegador.</p>
+      <div class="field">
+        <label for="cfg-url">URL da API (/exec)</label>
+        <input id="cfg-url" type="url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label for="cfg-token">Token (API_TOKEN)</label>
+        <input id="cfg-token" type="password" placeholder="seu segredo" autocomplete="off" />
+      </div>
+      <p id="setup-error" class="hint" style="color:#9a4a22" hidden></p>
+      <div class="modal-actions">
+        <button type="button" class="btn-primary" id="cfg-save">Salvar e abrir</button>
+      </div>
+      <p class="hint">Guia completo no README do repositório (pasta <code>gas/</code>).</p>
+    </div>
+  </div>
+
+  <div id="modal-overlay" class="modal-overlay" hidden>
+    <div class="modal-card">
+      <h2 id="modal-title">Novo registro</h2>
+      <form id="modal-form">
+        <input type="hidden" id="f-kind" />
+        <div class="form-grid">
+          <div class="field">
+            <label for="f-valor">Valor (R$)</label>
+            <input id="f-valor" type="number" min="0" step="0.01" required />
+          </div>
+          <div class="field">
+            <label for="f-data">Data</label>
+            <input id="f-data" type="date" required />
+          </div>
+          <div class="field" id="wrap-lente">
+            <label for="f-lente">Lente</label>
+            <select id="f-lente">
+              <option value="pessoal">Pessoal</option>
+              <option value="profissional">Profissional</option>
+              <option value="misto">Misto</option>
+            </select>
+          </div>
+          <div class="field" id="wrap-categoria">
+            <label for="f-categoria">Categoria</label>
+            <input id="f-categoria" type="text" placeholder="ex.: moradia, plantao" />
+          </div>
+          <div class="field" id="wrap-tipo" hidden>
+            <label for="f-tipo">Tipo de trabalho</label>
+            <select id="f-tipo">
+              <option value="plantao">Plantão</option>
+              <option value="consulta">Consulta</option>
+              <option value="procedimento">Procedimento</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+          <div class="field" id="wrap-pagador">
+            <label for="f-pagador">Pagador / local</label>
+            <input id="f-pagador" type="text" placeholder="Unimed, Hospital…" />
+          </div>
+          <div class="field" id="wrap-status">
+            <label for="f-status">Status</label>
+            <select id="f-status">
+              <option value="realizado">Realizado</option>
+              <option value="previsto">Previsto</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="f-nota">Nota</label>
+          <textarea id="f-nota" rows="2" placeholder="Opcional"></textarea>
+        </div>
+        <p id="modal-error" class="hint" style="color:#9a4a22" hidden></p>
+        <div class="modal-actions">
+          <button type="button" class="btn-ghost" id="modal-cancel">Cancelar</button>
+          <button type="submit" class="btn-primary">Salvar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="app">
+    <header class="top">
+      <div class="brand-block">
+        <p class="brand">Monitor <em>Financeiro</em></p>
+        <p class="tag">Vida inteira · casa + trabalho · Sheets</p>
+      </div>
+      <nav class="views" aria-label="Visões">
+        <button type="button" class="view-btn active" data-view="caixa">Caixa</button>
+        <button type="button" class="view-btn" data-view="trabalhos">Trabalhos realizados</button>
+        <button type="button" class="view-btn" data-view="gastos">Gastos por período</button>
+      </nav>
+      <div class="top-tools">
+        <p id="month-label" class="month-label"></p>
+        <button type="button" class="btn-ghost" id="btn-config" title="Reconfigurar API">API</button>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel data" aria-label="Painel de dados">
+        <div class="actions-row">
+          <button type="button" class="btn-soft" data-open="ganho">+ Ganho</button>
+          <button type="button" class="btn-soft" data-open="gasto">+ Gasto</button>
+          <button type="button" class="btn-soft" data-open="trabalho">+ Trabalho</button>
+        </div>
+
+        <div id="view-caixa" class="view active">
+          <h2>Caixa do mês</h2>
+          <div class="metrics">
+            <div>
+              <span class="label">Entrou</span>
+              <strong id="m-entrou">—</strong>
+            </div>
+            <div>
+              <span class="label">Saiu</span>
+              <strong id="m-saiu">—</strong>
+            </div>
+            <div class="highlight">
+              <span class="label">Sobrou na conta</span>
+              <strong id="m-conta">—</strong>
+            </div>
+            <div class="highlight truth">
+              <span class="label">Sobrou de verdade</span>
+              <strong id="m-verdade">—</strong>
+            </div>
+          </div>
+          <div class="lenses">
+            <div>
+              <span class="label">Pessoal</span>
+              <strong id="m-pessoal">—</strong>
+            </div>
+            <div>
+              <span class="label">Profissional</span>
+              <strong id="m-prof">—</strong>
+            </div>
+          </div>
+          <div class="lists">
+            <div>
+              <h3>A receber <span id="m-receber" class="muted"></span></h3>
+              <ul id="list-receber"></ul>
+            </div>
+            <div>
+              <h3>A pagar <span id="m-pagar" class="muted"></span></h3>
+              <ul id="list-pagar"></ul>
+            </div>
+          </div>
+          <div>
+            <h3>Lançamentos do mês</h3>
+            <ul id="list-lanc"></ul>
+          </div>
+        </div>
+
+        <div id="view-trabalhos" class="view" hidden>
+          <div class="view-head">
+            <h2>Trabalhos realizados</h2>
+            <p class="view-sub">Consultas, plantões e procedimentos — e o que já foi pago</p>
+          </div>
+          <div class="metrics three" id="trabalhos-metrics">
+            <div>
+              <span class="label">Esperado</span>
+              <strong id="t-esperado">—</strong>
+            </div>
+            <div class="highlight mint">
+              <span class="label">Recebido</span>
+              <strong id="t-recebido">—</strong>
+            </div>
+            <div class="highlight">
+              <span class="label">Em aberto</span>
+              <strong id="t-aberto">—</strong>
+            </div>
+          </div>
+          <div class="status-row" id="trabalhos-status"></div>
+          <div class="table-wrap">
+            <table class="data-table" aria-label="Lista de trabalhos">
+              <thead>
+                <tr>
+                  <th>Data</th>
+                  <th>Tipo</th>
+                  <th>Local / pagador</th>
+                  <th>Esperado</th>
+                  <th>Recebido</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="trabalhos-body"></tbody>
+            </table>
+            <p id="trabalhos-empty" class="empty" hidden>Nenhum trabalho ainda. Use + Trabalho ou o chat.</p>
+          </div>
+        </div>
+
+        <div id="view-gastos" class="view" hidden>
+          <div class="view-head">
+            <h2>Gastos por período</h2>
+            <p class="view-sub">Últimos 6 meses · pessoal e profissional</p>
+          </div>
+          <div class="metrics">
+            <div class="highlight">
+              <span class="label">Total no período</span>
+              <strong id="g-total">—</strong>
+            </div>
+            <div>
+              <span class="label">Pessoal</span>
+              <strong id="g-pessoal">—</strong>
+            </div>
+            <div>
+              <span class="label">Profissional</span>
+              <strong id="g-prof">—</strong>
+            </div>
+            <div class="highlight mint">
+              <span class="label">Meses</span>
+              <strong id="g-meses">6</strong>
+            </div>
+          </div>
+          <h3>Por mês</h3>
+          <div id="gastos-bars" class="bars" aria-label="Gráfico de gastos mensais"></div>
+          <div class="legend">
+            <span><i class="pessoal"></i>Pessoal</span>
+            <span><i class="profissional"></i>Profissional</span>
+          </div>
+          <h3>Por categoria</h3>
+          <ul id="gastos-cats" class="cat-list"></ul>
+        </div>
+      </section>
+
+      <section class="panel chat" aria-label="Agente">
+        <div class="chat-head">
+          <h2>Agente</h2>
+          <span class="pill">confirma antes de gravar</span>
+        </div>
+        <div id="messages" class="messages" role="log" aria-live="polite"></div>
+        <form id="chat-form" class="composer">
+          <input
+            id="chat-input"
+            type="text"
+            autocomplete="off"
+            placeholder='Ex.: Caiu 3600 da Unimed referente a junho'
+            aria-label="Mensagem para o agente"
+          />
+          <button type="submit">Enviar</button>
+        </form>
+        <p class="hint">Responda <strong>sim</strong> ou <strong>não</strong> para confirmar.</p>
+      </section>
+    </main>
+  </div>
+
+  <script src="./js/config.js"></script>
+  <script src="./js/api.js"></script>
+  <script src="./js/summary.js"></script>
+  <script src="./js/agent.js"></script>
+  <script src="./js/app.js"></script>
+</body>
+</html>
