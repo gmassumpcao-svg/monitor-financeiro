@@ -1,40 +1,50 @@
-# Como usar o Monitor no Apps Script
+# Como o médico usa o Monitor (você NÃO precisa ser o usuário)
 
-## 1. Cole os arquivos no Apps Script
+A planilha e o Apps Script ficam **na sua conta Google** (você é o “dono” técnico).  
+O **médico** usa no celular com a **conta Google dele**.
 
-No editor do Apps Script, cole **TODOS** os arquivos HTML + `Code.gs`.
+```text
+Você (dono)          Médico (usuário)
+cria planilha   →    abre /exec no celular
+implanta script →    logado no Gmail DELE
+guarda dados    ←    lança gastos / plantões
+```
 
-Use **Arquivo > Novo > Arquivo HTML** com estes nomes exatos:
+## 1. Arquivos no Apps Script
 
-- `Index`
-- `Styles`
-- `ApiJs`
-- `SummaryJs`
-- `AgentJs`
-- `AppJs`
+Cole **Code.gs** + HTMLs com estes nomes:
 
-E mantenha/atualize o `Code.gs`.
+`Index` · `Styles` · `ApiJs` · `SummaryJs` · `AgentJs` · `AppJs`
 
 ## 2. Propriedades do script
 
-Configure as propriedades do script:
+| Chave | Valor |
+|-------|--------|
+| `SPREADSHEET_ID` | ID da planilha |
+| `API_TOKEN` | segredo qualquer (ex. `openssl rand -hex 24`) |
+| `ALLOWED_EMAILS` | e-mail Google do médico, ex. `medico@gmail.com` (opcional, recomendado) |
 
-- `SPREADSHEET_ID` — ID da planilha do Google Sheets
-- `API_TOKEN` — token da API (mesmo valor usado pelo backend)
+## 3. `setupSheets` uma vez
 
-## 3. Rodar `setupSheets`
+## 4. Implantação (importante)
 
-No editor, execute a função `setupSheets` uma vez para preparar as abas/estrutura na planilha.
+1. **Implantar → Nova implantação → App da Web**
+2. **Executar como:** **Eu** (sua conta — grava na sua planilha)
+3. **Quem tem acesso:** **Qualquer pessoa com Conta do Google**  
+   (não use “Só eu”, senão só você abre)
+4. Copie a URL que termina em `/exec`
 
-## 4. Nova implantação (App da Web)
+## 5. O que enviar para o médico
 
-1. **Implantar > Nova implantação**
-2. Tipo: **App da Web**
-3. **Executar como:** Eu
-4. **Quem tem acesso:** "Qualquer pessoa com Conta do Google" **OU** "Só eu"
+1. A URL `/exec`
+2. Pedido: “Entre no Gmail **seu** e abra este link; favorite na tela inicial”
 
-## 5. Abrir no celular
+Ele **não** precisa do GitHub Pages nem do `API_TOKEN`.
 
-- Abra a URL `/exec` no celular **logado na Conta do Google**
-- **NÃO** use GitHub Pages para conectar a API neste modo
-- Favoritar a URL no celular para acesso rápido
+## Por que o GitHub Pages dá Failed to fetch?
+
+Porque o script está pedindo login Google. Para o médico, o caminho certo é a **URL `/exec`**, não o Pages.
+
+## Se quiser Pages público depois
+
+Aí a implantação precisa ser **Qualquer pessoa** (anônimo). Só faça isso se aceitar o risco de quem tiver URL+token gravar na planilha.

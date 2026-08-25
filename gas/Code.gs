@@ -101,11 +101,46 @@ function doPost(e) {
 /**
  * Chamado pelo frontend via google.script.run (app embutido).
  * Injeta o token automaticamente — não expor no HTML.
+ * Opcional: propriedade ALLOWED_EMAILS = "medico@gmail.com,outro@gmail.com"
+ * para restringir quem pode usar (conta Google do médico, não precisa ser a sua).
  */
 function apiCall(req) {
   req = req || {};
+  var gate = checkAllowedUser_();
+  if (!gate.ok) return gate;
   req.token = PropertiesService.getScriptProperties().getProperty("API_TOKEN");
   return dispatch_(normalizeParams_(req));
+}
+
+/** Se ALLOWED_EMAILS estiver definido, só esses e-mails passam. */
+function checkAllowedUser_() {
+  var raw = PropertiesService.getScriptProperties().getProperty("ALLOWED_EMAILS");
+  if (!raw || !String(raw).trim()) return { ok: true };
+  var allowed = String(raw)
+    .split(",")
+    .map(function (s) {
+      return s.trim().toLowerCase();
+    })
+    .filter(Boolean);
+  var email = "";
+  try {
+    email = String(Session.getActiveUser().getEmail() || "").toLowerCase();
+  } catch (e) {
+    email = "";
+  }
+  if (!email) {
+    return {
+      ok: false,
+      error: "Faça login na Conta Google do médico e abra de novo a URL /exec.",
+    };
+  }
+  if (allowed.indexOf(email) < 0) {
+    return {
+      ok: false,
+      error: "Este Google (" + email + ") não está autorizado. Peça para incluir o e-mail em ALLOWED_EMAILS.",
+    };
+  }
+  return { ok: true };
 }
 
 function normalizeParams_(req) {
