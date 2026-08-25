@@ -1,6 +1,8 @@
 # Google Apps Script — backend da planilha
 
-Arquivo principal: [`Code.gs`](Code.gs)
+Arquivos: [`Code.gs`](Code.gs) + [`Index.html`](Index.html) (UI completa embutida).
+
+Não precisa de HTMLs separados (`Styles`, `ApiJs`, etc.).
 
 ## Propriedades do script
 

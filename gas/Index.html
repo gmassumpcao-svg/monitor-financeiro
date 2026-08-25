@@ -8,10 +8,578 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet" />
-  <style><?!= include('Styles'); ?></style>
+  <style>
+/* Palette from clinic reference: wood, terracotta, cocoa, seafoam */
+:root {
+  --ink: #4a3728;
+  --ink-deep: #3a2a1f;
+  --muted: #7a6a5c;
+  --paper: #f3ebe3;
+  --panel: #faf6f1;
+  --line: #d9cfc4;
+  --terracotta: #b25b2d;
+  --terracotta-deep: #9a4a22;
+  --cocoa: #7b4b3a;
+  --seafoam: #dae8e8;
+  --seafoam-deep: #b9d0d0;
+  --sand: #e8ddd2;
+  --cream: #fffaf5;
+  --shadow: 0 18px 40px rgba(74, 55, 40, 0.08);
+  --radius: 18px;
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "Manrope", system-ui, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  color: var(--ink);
+  font-family: var(--font-body);
+  background:
+    linear-gradient(120deg, rgba(218, 232, 232, 0.55), transparent 42%),
+    linear-gradient(200deg, rgba(178, 91, 45, 0.08), transparent 40%),
+    linear-gradient(180deg, #efe6dc 0%, var(--paper) 45%, #e7ddd2 100%);
+}
+
+.app {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 28px 20px 40px;
+}
+
+.top {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: end;
+  gap: 16px;
+  margin-bottom: 22px;
+}
+
+.brand {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4vw, 2.75rem);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
+  color: var(--ink-deep);
+}
+
+.brand em {
+  font-style: italic;
+  color: var(--cocoa);
+  font-weight: 500;
+}
+
+.tag, .month-label, .hint, .label, .muted, .view-sub {
+  color: var(--muted);
+}
+
+.tag { margin: 6px 0 0; font-size: 0.98rem; }
+
+.month-label {
+  margin: 0;
+  font-weight: 700;
+  color: var(--cocoa);
+}
+
+.views {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+
+.view-btn, .btn-ghost, .btn-primary, .btn-soft {
+  border: 1px solid var(--line);
+  background: var(--cream);
+  color: var(--ink);
+  border-radius: 999px;
+  padding: 10px 16px;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.view-btn:hover, .btn-ghost:hover { border-color: var(--cocoa); }
+
+.view-btn.active, .btn-primary {
+  background: var(--cocoa);
+  border-color: var(--cocoa);
+  color: #fffaf6;
+}
+
+.btn-soft {
+  background: color-mix(in srgb, var(--seafoam) 70%, white);
+  border-color: var(--seafoam-deep);
+}
+
+.actions-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0 0 16px;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: minmax(300px, 1.05fr) minmax(300px, 0.95fr);
+  gap: 18px;
+}
+
+.panel {
+  background: color-mix(in srgb, var(--panel) 94%, white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 22px;
+  min-height: 72vh;
+}
+
+.panel h2 {
+  margin: 0 0 6px;
+  font-family: var(--font-display);
+  font-size: 1.45rem;
+  font-weight: 600;
+  color: var(--ink-deep);
+}
+
+.view-sub {
+  margin: 0 0 16px;
+  font-size: 0.95rem;
+}
+
+.panel h3 {
+  margin: 20px 0 10px;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.view[hidden] { display: none !important; }
+
+.metrics {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.metrics.three {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.metrics > div, .lenses > div {
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: var(--cream);
+  border: 1px solid var(--line);
+}
+
+.metrics .highlight {
+  background: color-mix(in srgb, var(--terracotta) 14%, white);
+  border-color: color-mix(in srgb, var(--terracotta) 35%, var(--line));
+}
+
+.metrics .truth,
+.metrics .mint {
+  background: color-mix(in srgb, var(--seafoam) 80%, white);
+  border-color: var(--seafoam-deep);
+}
+
+.metrics .label, .lenses .label {
+  display: block;
+  font-size: 0.78rem;
+  margin-bottom: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.metrics strong, .lenses strong {
+  font-size: 1.15rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-deep);
+}
+
+.lenses {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.lists {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+ul li {
+  padding: 8px 0;
+  border-bottom: 1px solid var(--line);
+  font-size: 0.92rem;
+  line-height: 1.35;
+}
+
+.status-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 14px 0 16px;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border: 1px solid var(--line);
+  background: var(--sand);
+  color: var(--ink);
+}
+
+.badge.pago {
+  background: var(--seafoam);
+  border-color: var(--seafoam-deep);
+}
+
+.badge.parcial {
+  background: color-mix(in srgb, var(--terracotta) 18%, white);
+  border-color: color-mix(in srgb, var(--terracotta) 40%, var(--line));
+}
+
+.badge.aberto {
+  background: #f3e6dc;
+  border-color: var(--line);
+}
+
+.table-wrap { overflow-x: auto; }
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.data-table th {
+  text-align: left;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  padding: 8px 6px;
+  border-bottom: 1px solid var(--line);
+}
+
+.data-table td {
+  padding: 10px 6px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: top;
+}
+
+.data-table tr:hover td {
+  background: color-mix(in srgb, var(--seafoam) 35%, transparent);
+}
+
+.bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  min-height: 180px;
+  padding: 12px 4px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.bar-col {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.bar-stack {
+  width: 100%;
+  max-width: 48px;
+  height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  border-radius: 10px 10px 4px 4px;
+  overflow: hidden;
+  background: var(--sand);
+}
+
+.bar-seg {
+  width: 100%;
+  min-height: 0;
+}
+
+.bar-seg.pessoal { background: var(--terracotta); }
+.bar-seg.profissional { background: var(--cocoa); }
+
+.bar-label {
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-align: center;
+  line-height: 1.2;
+}
+
+.bar-value {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--ink);
+  text-align: center;
+}
+
+.cat-list li {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.cat-track {
+  grid-column: 1 / -1;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--sand);
+  overflow: hidden;
+  margin-top: -4px;
+  margin-bottom: 6px;
+}
+
+.cat-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--terracotta), var(--cocoa));
+  border-radius: inherit;
+}
+
+.legend {
+  display: flex;
+  gap: 14px;
+  margin-top: 12px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.legend i {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+  margin-right: 6px;
+}
+
+.legend .pessoal { background: var(--terracotta); }
+.legend .profissional { background: var(--cocoa); }
+
+.chat {
+  display: flex;
+  flex-direction: column;
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--seafoam) 45%, white), transparent 28%),
+    var(--panel);
+}
+
+.chat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.chat-head h2 { margin: 0; }
+
+.pill {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--seafoam);
+  color: var(--ink);
+  border: 1px solid var(--seafoam-deep);
+}
+
+.messages {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 4px 2px 16px;
+  max-height: calc(72vh - 160px);
+}
+
+.bubble {
+  max-width: 92%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  white-space: pre-wrap;
+  line-height: 1.45;
+  font-size: 0.98rem;
+}
+
+.bubble.bot {
+  align-self: flex-start;
+  background: var(--cream);
+  border: 1px solid var(--line);
+}
+
+.bubble.user {
+  align-self: flex-end;
+  background: var(--terracotta);
+  color: #fff8f3;
+}
+
+.composer {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.composer input, .field input, .field select, .field textarea {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font: inherit;
+  background: var(--cream);
+  color: var(--ink);
+  width: 100%;
+}
+
+.composer input {
+  flex: 1;
+  border-radius: 999px;
+  padding: 12px 16px;
+}
+
+.composer input:focus, .field input:focus, .field select:focus, .field textarea:focus {
+  outline: 2px solid color-mix(in srgb, var(--terracotta) 45%, transparent);
+  outline-offset: 1px;
+}
+
+.composer button {
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 18px;
+  font: inherit;
+  font-weight: 700;
+  background: var(--cocoa);
+  color: #fffaf6;
+  cursor: pointer;
+}
+
+.composer button:hover {
+  background: var(--terracotta-deep);
+}
+
+.hint {
+  margin: 10px 0 0;
+  font-size: 0.85rem;
+}
+
+.empty {
+  color: var(--muted);
+  font-size: 0.9rem;
+  padding: 8px 0;
+}
+
+.setup-overlay, .modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(58, 42, 31, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 40;
+}
+
+.setup-overlay[hidden], .modal-overlay[hidden] {
+  display: none !important;
+}
+
+.setup-card, .modal-card {
+  width: min(520px, 100%);
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 22px;
+}
+
+.setup-card h2, .modal-card h2 {
+  margin: 0 0 8px;
+  font-family: var(--font-display);
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  margin: 12px 0;
+}
+
+.field label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px 12px;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.top-tools {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+@media (max-width: 980px) {
+  .top {
+    grid-template-columns: 1fr;
+    align-items: start;
+  }
+  .views { justify-content: start; }
+  .layout, .lists, .metrics, .metrics.three, .lenses, .form-grid {
+    grid-template-columns: 1fr;
+  }
+  .panel { min-height: auto; }
+  .messages { max-height: 42vh; }
+}
+  </style>
 </head>
 <body>
-  <div id="setup-overlay" class="setup-overlay" hidden></div>
+<div id="setup-overlay" class="setup-overlay" hidden></div>
 
   <div id="modal-overlay" class="modal-overlay" hidden>
     <div class="modal-card">
@@ -193,9 +761,1180 @@
   <script>
     window.MONITOR_CONFIG = { apiUrl: "", apiToken: "" };
   </script>
-  <script><?!= include('ApiJs'); ?></script>
-  <script><?!= include('SummaryJs'); ?></script>
-  <script><?!= include('AgentJs'); ?></script>
-  <script><?!= include('AppJs'); ?></script>
+  <script>
+/** Cliente API: google.script.run (app embutido) ou JSONP (GitHub Pages). */
+(function (global) {
+  const LS_URL = "monitor_api_url";
+  const LS_TOKEN = "monitor_api_token";
+
+  function isEmbedded() {
+    return typeof google !== "undefined" && google.script && google.script.run;
+  }
+
+  function getConfig() {
+    const cfg = global.MONITOR_CONFIG || {};
+    return {
+      apiUrl: (localStorage.getItem(LS_URL) || cfg.apiUrl || "").trim(),
+      apiToken: (localStorage.getItem(LS_TOKEN) || cfg.apiToken || "").trim(),
+    };
+  }
+
+  function saveConfig(apiUrl, apiToken) {
+    localStorage.setItem(LS_URL, apiUrl.trim().replace(/\?.*$/, ""));
+    localStorage.setItem(LS_TOKEN, apiToken.trim());
+  }
+
+  function configured() {
+    if (isEmbedded()) return true;
+    const c = getConfig();
+    return Boolean(c.apiUrl && c.apiToken);
+  }
+
+  function callEmbedded(action, extra) {
+    return new Promise((resolve, reject) => {
+      google.script.run
+        .withSuccessHandler((data) => resolve(data))
+        .withFailureHandler((err) => reject(new Error(err && err.message ? err.message : String(err))))
+        .apiCall(Object.assign({ action: action }, extra || {}));
+    });
+  }
+
+  function jsonp(apiUrl, params) {
+    return new Promise((resolve, reject) => {
+      const callbackName = "gas_cb_" + Date.now() + "_" + Math.floor(Math.random() * 1e6);
+      const script = document.createElement("script");
+      const timer = setTimeout(() => {
+        cleanup();
+        reject(new Error("Tempo esgotado. Prefira abrir a URL /exec do Apps Script no celular."));
+      }, 25000);
+
+      function cleanup() {
+        clearTimeout(timer);
+        try {
+          delete window[callbackName];
+        } catch (e) {
+          window[callbackName] = undefined;
+        }
+        if (script.parentNode) script.parentNode.removeChild(script);
+      }
+
+      window[callbackName] = (data) => {
+        cleanup();
+        resolve(data);
+      };
+
+      script.onerror = () => {
+        cleanup();
+        reject(
+          new Error(
+            "Apps Script pediu login (CORS). Abra a URL /exec direto no navegador logado no Google — não use o GitHub Pages neste caso."
+          )
+        );
+      };
+
+      const q = new URLSearchParams();
+      Object.keys(params).forEach((key) => {
+        const val = params[key];
+        if (val === undefined) return;
+        if (val === null) {
+          q.set(key, "null");
+          return;
+        }
+        if (typeof val === "object") {
+          q.set(key, JSON.stringify(val));
+          return;
+        }
+        q.set(key, String(val));
+      });
+      q.set("callback", callbackName);
+
+      const base = apiUrl.replace(/\?.*$/, "").replace(/\/$/, "");
+      script.src = base + "?" + q.toString();
+      document.body.appendChild(script);
+    });
+  }
+
+  async function call(action, extra = {}) {
+    let data;
+    if (isEmbedded()) {
+      data = await callEmbedded(action, extra);
+    } else {
+      const { apiUrl, apiToken } = getConfig();
+      if (!apiUrl || !apiToken) throw new Error("Configure a URL da API e o token.");
+      if (!/\/exec$/i.test(apiUrl.replace(/\?.*$/, ""))) {
+        throw new Error("A URL deve terminar em /exec (não use /dev).");
+      }
+      data = await jsonp(apiUrl, { token: apiToken, action, ...extra });
+    }
+    if (!data || !data.ok) throw new Error((data && data.error) || "Erro na API");
+    return data;
+  }
+
+  let state = {
+    lancamentos: [],
+    trabalhos: [],
+    vinculos: [],
+    profile: { name: "Médico", started_at: null, onboarding_done: 0 },
+    pending: null,
+  };
+
+  function getState() {
+    return state;
+  }
+
+  async function refresh() {
+    const data = await call("getAll");
+    state = {
+      lancamentos: data.data.lancamentos || [],
+      trabalhos: data.data.trabalhos || [],
+      vinculos: data.data.vinculos || [],
+      profile: data.data.profile || state.profile,
+      pending: data.data.pending || null,
+    };
+    return state;
+  }
+
+  async function setPending(pending) {
+    await call("setPending", { payload: pending });
+    state.pending = pending;
+  }
+
+  async function setOnboarding(name) {
+    const res = await call("setOnboarding", { name: name || "Médico" });
+    state.profile = res.profile;
+    return res.profile;
+  }
+
+  async function addLancamento(payload) {
+    const res = await call("addLancamento", { payload });
+    state.lancamentos.unshift(res.item);
+    state.pending = null;
+    await call("setPending", { payload: null });
+    return res.item;
+  }
+
+  async function addTrabalho(payload) {
+    const res = await call("addTrabalho", { payload });
+    state.trabalhos.unshift(res.item);
+    state.pending = null;
+    await call("setPending", { payload: null });
+    return res.item;
+  }
+
+  async function applyPagamentoVinculado(payload) {
+    const res = await call("applyPagamentoVinculado", { payload });
+    state.lancamentos.unshift(res.result.lancamento);
+    (res.result.vinculos || []).forEach((v) => state.vinculos.unshift(v));
+    state.pending = null;
+    return res.result;
+  }
+
+  global.MonitorApi = {
+    isEmbedded,
+    getConfig,
+    saveConfig,
+    configured,
+    call,
+    getState,
+    refresh,
+    setPending,
+    setOnboarding,
+    addLancamento,
+    addTrabalho,
+    applyPagamentoVinculado,
+  };
+})(window);
+  </script>
+  <script>
+/** Resumos: caixa, trabalhos, gastos (port de app/summary.py + trechos de db). */
+(function (global) {
+  const MONTH_LABELS = ["", "Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
+
+  function today() {
+    return new Date();
+  }
+
+  function monthBounds(year, month) {
+    const t = today();
+    return [year || t.getFullYear(), month || t.getMonth() + 1];
+  }
+
+  function shiftMonth(year, month, delta) {
+    const idx = year * 12 + (month - 1) + delta;
+    return [Math.floor(idx / 12), (idx % 12) + 1];
+  }
+
+  function listLancamentos(state, year, month) {
+    let rows = state.lancamentos || [];
+    if (year && month) {
+      const prefix = `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}`;
+      rows = rows.filter((l) => String(l.data_caixa || "").startsWith(prefix));
+    }
+    return rows.slice().sort((a, b) => String(b.data_caixa).localeCompare(String(a.data_caixa)));
+  }
+
+  function trabalhosComRecebido(state) {
+    const byTrabalho = {};
+    (state.vinculos || []).forEach((v) => {
+      byTrabalho[v.trabalho_id] = (byTrabalho[v.trabalho_id] || 0) + Number(v.valor || 0);
+    });
+    return (state.trabalhos || [])
+      .map((t) => {
+        const valor_recebido = Math.round((byTrabalho[t.id] || 0) * 100) / 100;
+        const valor_esperado = Number(t.valor_esperado) || 0;
+        const saldo_receber = Math.round((valor_esperado - valor_recebido) * 100) / 100;
+        let status_recebimento = "aberto";
+        if (saldo_receber <= 0.009) status_recebimento = "pago";
+        else if (valor_recebido > 0) status_recebimento = "parcial";
+        return { ...t, valor_esperado, valor_recebido, saldo_receber, status_recebimento };
+      })
+      .sort((a, b) => String(b.data).localeCompare(String(a.data)));
+  }
+
+  function trabalhosAbertosNoPeriodo(state, year, month, pagador) {
+    const prefix = `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}`;
+    let items = trabalhosComRecebido(state).filter(
+      (t) => String(t.data).startsWith(prefix) && t.status_recebimento !== "pago"
+    );
+    if (pagador) {
+      const key = pagador.toLowerCase();
+      items = items.filter((t) => String(t.pagador || "").toLowerCase().includes(key));
+    }
+    return items;
+  }
+
+  function lensTotals(items, lente) {
+    let ent = 0;
+    let sai = 0;
+    for (const i of items) {
+      if (lente === "pessoal" && i.lente !== "pessoal") continue;
+      if (lente === "profissional" && i.lente !== "profissional" && i.lente !== "misto") continue;
+      if (lente === "misto" && i.lente !== "misto") continue;
+      if (i.tipo === "entrada") ent += Number(i.valor) || 0;
+      else sai += Number(i.valor) || 0;
+    }
+    return {
+      entrou: Math.round(ent * 100) / 100,
+      saiu: Math.round(sai * 100) / 100,
+      saldo: Math.round((ent - sai) * 100) / 100,
+    };
+  }
+
+  function summarize(state, year, month) {
+    const [y, m] = monthBounds(year, month);
+    const lancs = listLancamentos(state, y, m);
+    const realizados = lancs.filter((l) => l.status === "realizado");
+    const previstos = lancs.filter((l) => l.status === "previsto");
+
+    const entrou = Math.round(
+      realizados.filter((i) => i.tipo === "entrada").reduce((s, i) => s + Number(i.valor), 0) * 100
+    ) / 100;
+    const saiu = Math.round(
+      realizados.filter((i) => i.tipo === "saida").reduce((s, i) => s + Number(i.valor), 0) * 100
+    ) / 100;
+    const sobrou_conta = Math.round((entrou - saiu) * 100) / 100;
+    const a_pagar = Math.round(
+      previstos.filter((i) => i.tipo === "saida").reduce((s, i) => s + Number(i.valor), 0) * 100
+    ) / 100;
+
+    const trabalhos = trabalhosComRecebido(state);
+    const a_receber = Math.round(
+      trabalhos.filter((t) => t.saldo_receber > 0).reduce((s, t) => s + t.saldo_receber, 0) * 100
+    ) / 100;
+    const abertos = trabalhos.filter((t) => t.status_recebimento !== "pago");
+
+    const prof = lensTotals(realizados, "profissional");
+    const reserva_imposto = Math.round(prof.entrou * 0.2 * 100) / 100;
+    const sobrou_verdade = Math.round((sobrou_conta - a_pagar - reserva_imposto) * 100) / 100;
+
+    return {
+      ano: y,
+      mes: m,
+      entrou,
+      saiu,
+      sobrou_conta,
+      a_pagar,
+      a_receber,
+      reserva_imposto_estimada: reserva_imposto,
+      sobrou_verdade,
+      por_lente: {
+        pessoal: lensTotals(realizados, "pessoal"),
+        profissional: prof,
+      },
+      lancamentos: lancs,
+      trabalhos_abertos: abertos,
+      previstos,
+    };
+  }
+
+  function trabalhosView(state) {
+    const items = trabalhosComRecebido(state);
+    const pago = items.filter((t) => t.status_recebimento === "pago").length;
+    const parcial = items.filter((t) => t.status_recebimento === "parcial").length;
+    const aberto = items.filter((t) => t.status_recebimento === "aberto").length;
+    const esperado = Math.round(items.reduce((s, t) => s + t.valor_esperado, 0) * 100) / 100;
+    const recebido = Math.round(items.reduce((s, t) => s + t.valor_recebido, 0) * 100) / 100;
+    return {
+      trabalhos: items,
+      totais: {
+        quantidade: items.length,
+        pago,
+        parcial,
+        aberto,
+        esperado,
+        recebido,
+        em_aberto: Math.round((esperado - recebido) * 100) / 100,
+      },
+    };
+  }
+
+  function gastosPorPeriodo(state, meses = 6) {
+    const t = today();
+    const periods = [];
+    const allSaidas = [];
+    for (let offset = -(meses - 1); offset <= 0; offset++) {
+      const [y, m] = shiftMonth(t.getFullYear(), t.getMonth() + 1, offset);
+      const lancs = listLancamentos(state, y, m).filter(
+        (l) => l.tipo === "saida" && l.status === "realizado"
+      );
+      allSaidas.push(...lancs);
+      const pessoal = Math.round(
+        lancs.filter((l) => l.lente === "pessoal").reduce((s, l) => s + Number(l.valor), 0) * 100
+      ) / 100;
+      const profissional = Math.round(
+        lancs
+          .filter((l) => l.lente === "profissional" || l.lente === "misto")
+          .reduce((s, l) => s + Number(l.valor), 0) * 100
+      ) / 100;
+      const total = Math.round((pessoal + profissional) * 100) / 100;
+      periods.push({
+        ano: y,
+        mes: m,
+        label: `${MONTH_LABELS[m]}/${String(y).slice(2)}`,
+        total,
+        pessoal,
+        profissional,
+      });
+    }
+    const byCat = {};
+    const byLente = {};
+    for (const l of allSaidas) {
+      byCat[l.categoria] = (byCat[l.categoria] || 0) + Number(l.valor);
+      byLente[l.lente] = (byLente[l.lente] || 0) + Number(l.valor);
+    }
+    const categorias = Object.entries(byCat)
+      .map(([categoria, total]) => ({ categoria, total: Math.round(total * 100) / 100 }))
+      .sort((a, b) => b.total - a.total);
+    const max_mes = Math.max(...periods.map((p) => p.total), 0) || 1;
+    return {
+      meses,
+      periodos: periods,
+      max_mes,
+      categorias,
+      por_lente: Object.fromEntries(
+        Object.entries(byLente).map(([k, v]) => [k, Math.round(v * 100) / 100])
+      ),
+      total_periodo: Math.round(periods.reduce((s, p) => s + p.total, 0) * 100) / 100,
+    };
+  }
+
+  global.MonitorSummary = {
+    summarize,
+    trabalhosView,
+    gastosPorPeriodo,
+    trabalhosComRecebido,
+    trabalhosAbertosNoPeriodo,
+    listLancamentos,
+  };
+})(window);
+  </script>
+  <script>
+/** Agente por regras em português (port de app/agent.py). */
+(function (global) {
+  const MONTHS = {
+    janeiro: 1, jan: 1, fevereiro: 2, fev: 2, marco: 3, março: 3, mar: 3,
+    abril: 4, abr: 4, maio: 5, mai: 5, junho: 6, jun: 6, julho: 7, jul: 7,
+    agosto: 8, ago: 8, setembro: 9, set: 9, outubro: 10, out: 10,
+    novembro: 11, nov: 11, dezembro: 12, dez: 12,
+  };
+
+  const PROF_INCOME_CATS = {
+    plantao: "plantao", plantão: "plantao", convenio: "convenio", convênio: "convenio",
+    unimed: "convenio", bradesco: "convenio", sulamerica: "convenio", sulamérica: "convenio",
+    particular: "honorario_particular", honorario: "honorario_particular", honorário: "honorario_particular",
+  };
+
+  const PROF_EXPENSE_CATS = {
+    sala: "aluguel_sala", "aluguel de sala": "aluguel_sala", material: "material",
+    contador: "pessoal_contador", crm: "conselho_seguro", das: "imposto", imposto: "imposto",
+  };
+
+  const PERS_EXPENSE_CATS = {
+    casa: "moradia", aluguel: "moradia", moradia: "moradia", escola: "familia_escola",
+    familia: "familia_escola", família: "familia_escola", mercado: "alimentacao",
+    alimentação: "alimentacao", alimentacao: "alimentacao", comida: "alimentacao",
+    uber: "transporte", carro: "transporte", lazer: "lazer",
+  };
+
+  function brl(v) {
+    return (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  }
+
+  function parseAmountToken(raw) {
+    let s = raw;
+    if (s.includes(",") && s.includes(".")) s = s.replace(/\./g, "").replace(",", ".");
+    else if (s.includes(",")) s = s.replace(",", ".");
+    const n = Number(s);
+    return Number.isFinite(n) ? n : null;
+  }
+
+  function money(text) {
+    let cleaned = text.replace(/\b\d{1,2}[\/\-]\d{1,2}(?:[\/\-]\d{2,4})?\b/g, " ");
+    cleaned = cleaned.replace(/\b\d{1,2}[\/\-]\d{4}\b/g, " ");
+    const explicit = [...cleaned.matchAll(/r\$\s*(\d{1,3}(?:\.\d{3})*,\d{2}|\d+(?:[.,]\d{1,2})?)/gi)];
+    if (explicit.length) return parseAmountToken(explicit[explicit.length - 1][1]);
+    const candidates = [...cleaned.matchAll(/(\d{1,3}(?:\.\d{3})*,\d{2}|\d{2,}(?:[.,]\d{1,2})?)/g)];
+    for (let i = candidates.length - 1; i >= 0; i--) {
+      const val = parseAmountToken(candidates[i][1]);
+      if (val != null && val >= 1) return val;
+    }
+    return null;
+  }
+
+  function parseDate(text, defaultDate) {
+    const d0 = defaultDate || new Date();
+    const m = text.match(/\b(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?\b/);
+    if (m) {
+      let year = d0.getFullYear();
+      if (m[3]) {
+        year = Number(m[3]);
+        if (year < 100) year += 2000;
+      }
+      const mo = Number(m[2]);
+      const d = Number(m[1]);
+      const dt = new Date(year, mo - 1, d);
+      if (dt.getFullYear() === year && dt.getMonth() === mo - 1 && dt.getDate() === d) {
+        return `${year}-${String(mo).padStart(2, "0")}-${String(d).padStart(2, "0")}`;
+      }
+    }
+    return `${d0.getFullYear()}-${String(d0.getMonth() + 1).padStart(2, "0")}-${String(d0.getDate()).padStart(2, "0")}`;
+  }
+
+  function monthYear(text) {
+    const today = new Date();
+    const textN = text.toLowerCase();
+    for (const [name, mo] of Object.entries(MONTHS)) {
+      if (new RegExp(`\\b${name}\\b`).test(textN)) {
+        const ym = textN.match(new RegExp(`\\b${name}\\s+(?:de\\s+)?(\\d{4})\\b`));
+        let year = ym ? Number(ym[1]) : today.getFullYear();
+        if (!ym && mo > today.getMonth() + 1 && textN.includes("referente")) year = today.getFullYear() - 1;
+        return [year, mo];
+      }
+    }
+    const m = textN.match(/\b(\d{1,2})[\/\-](\d{4})\b/);
+    if (m) return [Number(m[2]), Number(m[1])];
+    if (/este mês|esse mês|este mes|esse mes/.test(textN)) return [today.getFullYear(), today.getMonth() + 1];
+    if (/mês passado|mes passado/.test(textN)) {
+      if (today.getMonth() === 0) return [today.getFullYear() - 1, 12];
+      return [today.getFullYear(), today.getMonth()];
+    }
+    return null;
+  }
+
+  function fmtTrabalho(t) {
+    const bits = [t.data, t.tipo];
+    if (t.local) bits.push(t.local);
+    if (t.pagador) bits.push(t.pagador);
+    bits.push(`esperado ${brl(t.valor_esperado)}`);
+    bits.push(`em aberto ${brl(t.saldo_receber)}`);
+    return bits.join(" · ");
+  }
+
+  function guessLenteCategoria(low, tipo) {
+    if (tipo === "entrada") {
+      for (const [k, cat] of Object.entries(PROF_INCOME_CATS)) {
+        if (low.includes(k)) return ["profissional", cat];
+      }
+      return ["profissional", "outros_ganhos"];
+    }
+    for (const [k, cat] of Object.entries(PERS_EXPENSE_CATS)) {
+      if (low.includes(k)) {
+        if (low.includes("sala")) return ["profissional", "aluguel_sala"];
+        return ["pessoal", cat];
+      }
+    }
+    for (const [k, cat] of Object.entries(PROF_EXPENSE_CATS)) {
+      if (low.includes(k)) return ["profissional", cat];
+    }
+    if (/sala|crm|das|consultório|consultorio/.test(low)) return ["profissional", "outros"];
+    if (/casa|escola|mercado/.test(low)) return ["pessoal", "outros"];
+    return ["pessoal", "outros"];
+  }
+
+  async function proposeLancamento(text, low, tipo) {
+    const state = MonitorApi.getState();
+    const valor = money(text);
+    if (valor == null) {
+      return {
+        reply: "Não achei o valor. Ex.: “Recebi 4200 de plantão”.",
+        pending: state.pending,
+        summary: MonitorSummary.summarize(state),
+      };
+    }
+    const [lente, categoria] = guessLenteCategoria(low, tipo);
+    const data_caixa = parseDate(text);
+    const status = /\b(vou pagar|a pagar|previsto|vai sair)\b/.test(low) ? "previsto" : "realizado";
+    let pagador = null;
+    for (const name of ["unimed", "bradesco", "sulamerica", "sulamérica", "particular"]) {
+      if (low.includes(name)) {
+        pagador = { unimed: "Unimed", bradesco: "Bradesco", sulamerica: "SulAmérica", sulamérica: "SulAmérica", particular: "Particular" }[name];
+        break;
+      }
+    }
+    const action = {
+      action: "create_lancamento",
+      label: `${tipo === "entrada" ? "Entrada" : "Saída"} ${brl(valor)} · ${lente} · ${categoria}`,
+      payload: { tipo, valor, data_caixa, lente, categoria, status, nota: text, pagador },
+    };
+    await MonitorApi.setPending(action);
+    let askLente = "";
+    if (tipo === "saida" && lente === "pessoal" && !Object.keys(PERS_EXPENSE_CATS).some((k) => low.includes(k))) {
+      askLente = "\n(Assumi **pessoal**. Se for profissional, cancele e diga “paguei … de sala/CRM/DAS”.)";
+    }
+    return {
+      reply:
+        `Posso gravar?\n• Tipo: ${tipo === "entrada" ? "entrada" : "saída"}\n• Valor: ${brl(valor)}\n` +
+        `• Data: ${data_caixa}\n• Lente: ${lente}\n• Categoria: ${categoria}\n• Status: ${status}\n` +
+        `Responda **sim** ou **não**.${askLente}`,
+      pending: action,
+      summary: MonitorSummary.summarize(MonitorApi.getState()),
+    };
+  }
+
+  async function proposeTrabalho(text, low) {
+    const state = MonitorApi.getState();
+    const valor = money(text);
+    if (valor == null) {
+      return {
+        reply: "Para registrar o trabalho, preciso do valor esperado. Ex.: “Fiz plantão dia 10/06 no Hospital X, Unimed, 1800”.",
+        pending: state.pending,
+        summary: MonitorSummary.summarize(state),
+      };
+    }
+    let tipo = "outro";
+    if (low.includes("consulta")) tipo = "consulta";
+    else if (low.includes("procedimento")) tipo = "procedimento";
+    else if (low.includes("plant")) tipo = "plantao";
+
+    const data_t = parseDate(text);
+    let local = null;
+    const mLoc = low.match(/\bno\s+([^,]+?)(?:,|\s+unimed|\s+bradesco|\s+\d|$)/);
+    if (mLoc) local = mLoc[1].trim().replace(/\b\w/g, (c) => c.toUpperCase());
+
+    let pagador = null;
+    const map = { unimed: "Unimed", bradesco: "Bradesco", sulamerica: "SulAmérica", sulamérica: "SulAmérica", particular: "Particular", hospital: "Hospital" };
+    for (const [name, label] of Object.entries(map)) {
+      if (low.includes(name)) { pagador = label; break; }
+    }
+
+    const action = {
+      action: "create_trabalho",
+      label: `Trabalho ${tipo} ${data_t} ${brl(valor)}`,
+      payload: { data: data_t, tipo, local, pagador, valor_esperado: valor, nota: text },
+    };
+    await MonitorApi.setPending(action);
+    return {
+      reply:
+        `Registrar trabalho feito?\n• Data: ${data_t}\n• Tipo: ${tipo}\n• Local: ${local || "—"}\n` +
+        `• Pagador: ${pagador || "—"}\n• Valor esperado: ${brl(valor)}\nResponda **sim** ou **não**.`,
+      pending: action,
+      summary: MonitorSummary.summarize(MonitorApi.getState()),
+    };
+  }
+
+  async function proposeVinculo(text, low) {
+    const state = MonitorApi.getState();
+    const valor = money(text);
+    if (valor == null) {
+      return {
+        reply: "Não achei o valor que caiu. Ex.: “Caiu 3600 da Unimed referente a junho”.",
+        pending: state.pending,
+        summary: MonitorSummary.summarize(state),
+      };
+    }
+    let pagador = null;
+    for (const [name, label] of [["unimed", "Unimed"], ["bradesco", "Bradesco"], ["sulamérica", "SulAmérica"], ["sulamerica", "SulAmérica"]]) {
+      if (low.includes(name)) { pagador = label; break; }
+    }
+    const my = monthYear(low);
+    if (!my) {
+      return {
+        reply: "De qual mês é esse pagamento? Ex.: “referente a junho” ou “referente a 06/2026”.",
+        pending: state.pending,
+        summary: MonitorSummary.summarize(state),
+      };
+    }
+    const [year, month] = my;
+    let candidatos = MonitorSummary.trabalhosAbertosNoPeriodo(state, year, month, pagador);
+    if (!candidatos.length) {
+      candidatos = MonitorSummary.trabalhosAbertosNoPeriodo(state, year, month, null);
+      if (!candidatos.length) {
+        return {
+          reply:
+            `Não achei trabalhos em aberto em ${String(month).padStart(2, "0")}/${year}` +
+            `${pagador ? ` para ${pagador}` : ""}. Cadastre o trabalho primeiro (“Fiz plantão…”) e tente de novo.`,
+          pending: null,
+          summary: MonitorSummary.summarize(state),
+        };
+      }
+    }
+    let restante = valor;
+    const alocacoes = [];
+    for (const t of candidatos.slice().sort((a, b) => String(a.data).localeCompare(String(b.data)))) {
+      if (restante <= 0.009) break;
+      const usa = Math.min(t.saldo_receber, restante);
+      alocacoes.push({ trabalho_id: t.id, valor: Math.round(usa * 100) / 100, resumo: fmtTrabalho(t) });
+      restante = Math.round((restante - usa) * 100) / 100;
+    }
+    const data_caixa = parseDate(text);
+    const action = {
+      action: "create_pagamento_vinculado",
+      label: `Pagamento ${brl(valor)} → ${alocacoes.length} trabalho(s)`,
+      payload: {
+        valor, data_caixa,
+        data_competencia: `${year}-${String(month).padStart(2, "0")}-01`,
+        pagador: pagador || "Convênio", categoria: "convenio", lente: "profissional",
+        nota: text, alocacoes, sobra: restante,
+      },
+    };
+    await MonitorApi.setPending(action);
+    const lines = alocacoes.map((a) => `• ${brl(a.valor)} → ${a.resumo}`);
+    let sobraMsg = "";
+    if (restante > 0.009) {
+      sobraMsg = `\n\nSobra ${brl(restante)} sem trabalho correspondente. O lançamento entra mesmo assim; a sobra fica sem vínculo.`;
+    }
+    const totalAlocado = Math.round((valor - restante) * 100) / 100;
+    const esperado = Math.round(candidatos.reduce((s, t) => s + t.saldo_receber, 0) * 100) / 100;
+    let diffMsg = "";
+    if (Math.abs(valor - esperado) > 0.009 && restante <= 0.009 && totalAlocado < esperado) {
+      diffMsg = `\n(Pagamento parcial: em aberto no período era ${brl(esperado)}.)`;
+    } else if (valor + 0.009 < esperado && restante <= 0.009) {
+      diffMsg = `\n(Em aberto no período: ${brl(esperado)}. Isto quita só parte.)`;
+    }
+    return {
+      reply:
+        `Sugestão de vínculo para ${brl(valor)}${pagador ? ` da ${pagador}` : ""} referente a ${String(month).padStart(2, "0")}/${year}:\n` +
+        lines.join("\n") + sobraMsg + diffMsg +
+        "\n\nGravo o recebimento profissional e esses vínculos? **sim** / **não**.",
+      pending: action,
+      summary: MonitorSummary.summarize(MonitorApi.getState()),
+    };
+  }
+
+  async function applyPending(pending) {
+    const action = pending.action;
+    const payload = pending.payload || {};
+    if (action === "create_lancamento") {
+      const item = await MonitorApi.addLancamento(payload);
+      return {
+        reply: `Gravado: ${pending.label} (id ${item.id}).`,
+        pending: null,
+        summary: MonitorSummary.summarize(MonitorApi.getState()),
+      };
+    }
+    if (action === "create_trabalho") {
+      const item = await MonitorApi.addTrabalho(payload);
+      return {
+        reply: `Trabalho registrado (id ${item.id}). Ele entra em **a receber** até vincular um pagamento.`,
+        pending: null,
+        summary: MonitorSummary.summarize(MonitorApi.getState()),
+      };
+    }
+    if (action === "create_pagamento_vinculado") {
+      await MonitorApi.applyPagamentoVinculado(payload);
+      const n = (payload.alocacoes || []).length;
+      const sobra = payload.sobra || 0;
+      const extra = sobra > 0.009 ? ` Sobra sem vínculo: ${brl(sobra)}.` : "";
+      return {
+        reply: `Recebimento gravado e vinculado a ${n} trabalho(s).${extra}`,
+        pending: null,
+        summary: MonitorSummary.summarize(MonitorApi.getState()),
+      };
+    }
+    await MonitorApi.setPending(null);
+    return {
+      reply: "Não consegui aplicar essa confirmação. Tente de novo.",
+      pending: null,
+      summary: MonitorSummary.summarize(MonitorApi.getState()),
+    };
+  }
+
+  async function handle(message) {
+    const text = (message || "").trim();
+    const state = MonitorApi.getState();
+    if (!text) {
+      return {
+        reply: "Pode falar — lançamento, trabalho feito, pagamento de convênio ou “como foi o mês?”.",
+        pending: state.pending,
+        summary: MonitorSummary.summarize(state),
+      };
+    }
+    const low = text.toLowerCase();
+    let pending = state.pending;
+
+    if (pending && /^(sim|s|confirmo|confirma|ok|pode|pode gravar|isso)$/.test(low)) {
+      return applyPending(pending);
+    }
+    if (pending && /^(não|nao|n|cancela|cancelar)$/.test(low)) {
+      await MonitorApi.setPending(null);
+      return {
+        reply: "Ok, não gravei nada. Pode reformular.",
+        pending: null,
+        summary: MonitorSummary.summarize(MonitorApi.getState()),
+      };
+    }
+
+    if (/\b(sou eu|começo agora|comeco agora|olá|ola|oi)\b/.test(low) || ["começar", "comecar", "start"].includes(low)) {
+      const profile = await MonitorApi.setOnboarding();
+      return {
+        reply:
+          "Olá. Sou o Monitor Financeiro — seu controle da vida (casa + trabalho).\n\n" +
+          "Pode me dizer, por exemplo:\n" +
+          "• “Recebi 4200 de plantão”\n• “Paguei 2500 de aluguel de casa”\n" +
+          "• “Fiz plantão dia 10/06 no Hospital X, Unimed, 1800”\n" +
+          "• “Caiu 3600 da Unimed referente a junho”\n• “Como foi o mês?”\n\n" +
+          "Eu sempre peço confirmação antes de gravar.",
+        pending: null,
+        summary: MonitorSummary.summarize(MonitorApi.getState()),
+        profile,
+      };
+    }
+
+    if (/como foi|resumo|caixa|sobrou|balanço|balanco/.test(low)) {
+      const my = monthYear(low) || [new Date().getFullYear(), new Date().getMonth() + 1];
+      const s = MonitorSummary.summarize(state, my[0], my[1]);
+      const reply =
+        `**${String(s.mes).padStart(2, "0")}/${s.ano}**\n` +
+        `Entrou ${brl(s.entrou)} · Saiu ${brl(s.saiu)}\n` +
+        `**Sobrou na conta:** ${brl(s.sobrou_conta)}\n` +
+        `A pagar (previsto): ${brl(s.a_pagar)}\n` +
+        `Reserva imposto (est. 20% prof.): ${brl(s.reserva_imposto_estimada)}\n` +
+        `**Sobrou de verdade:** ${brl(s.sobrou_verdade)}\n\n` +
+        `Pessoal → saldo ${brl(s.por_lente.pessoal.saldo)}\n` +
+        `Profissional → saldo ${brl(s.por_lente.profissional.saldo)}`;
+      return { reply, pending, summary: s };
+    }
+
+    if (/a receber|receber|em aberto|o que ainda/.test(low) && !low.includes("pagar")) {
+      const s = MonitorSummary.summarize(state);
+      const abertos = s.trabalhos_abertos;
+      const reply = !abertos.length
+        ? "Nada a receber no momento — todos os trabalhos estão quitados ou ainda não há trabalhos."
+        : `**A receber:** ${brl(s.a_receber)}\n` + abertos.slice(0, 12).map((t) => `• ${fmtTrabalho(t)}`).join("\n");
+      return { reply, pending, summary: s };
+    }
+
+    if (/a pagar|contas a pagar|vai sair/.test(low)) {
+      const s = MonitorSummary.summarize(state);
+      const prev = s.previstos.filter((l) => l.tipo === "saida");
+      const reply = !prev.length
+        ? `**A pagar (previsto):** ${brl(s.a_pagar)} — nenhuma conta prevista cadastrada.`
+        : `**A pagar:** ${brl(s.a_pagar)}\n` +
+          prev.map((l) => `• ${l.data_caixa} · ${l.categoria} · ${l.lente} · ${brl(l.valor)}`).join("\n");
+      return { reply, pending, summary: s };
+    }
+
+    if (/\b(caiu|recebi da|recebimento da|pagamento da|pagou a)\b/.test(low) || (/\breferente a\b/.test(low) && money(low))) {
+      return proposeVinculo(text, low);
+    }
+    if (/\b(recebi|entrou|ganhei)\b/.test(low)) return proposeLancamento(text, low, "entrada");
+    if (/\b(paguei|gastei|saí|saiu|despesa)\b/.test(low)) return proposeLancamento(text, low, "saida");
+    if (/\b(fiz|atendi|plantei)\b/.test(low) || /\b(registrar|cadastre|cadastrar)\s+(plantão|plantao|consulta|procedimento)\b/.test(low)) {
+      return proposeTrabalho(text, low);
+    }
+
+    if (pending) {
+      return {
+        reply: `Ainda tenho uma ação esperando confirmação. Responda **sim** ou **não**.\nPendente: ${pending.label || pending.action}`,
+        pending,
+        summary: MonitorSummary.summarize(state),
+      };
+    }
+
+    return {
+      reply:
+        "Não entendi com segurança. Exemplos:\n• Recebi 3000 de particular\n• Paguei 1800 de escola\n" +
+        "• Fiz plantão dia 05/06 no Hospital Y, Unimed, 2000\n• Caiu 4000 da Unimed referente a junho\n• Como foi o mês?",
+      pending: null,
+      summary: MonitorSummary.summarize(state),
+    };
+  }
+
+  /** Criação direta via formulário (com confirmação implícita). */
+  async function createFromForm(kind, fields) {
+    if (kind === "gasto" || kind === "ganho") {
+      const item = await MonitorApi.addLancamento({
+        tipo: kind === "ganho" ? "entrada" : "saida",
+        valor: Number(fields.valor),
+        data_caixa: fields.data,
+        lente: fields.lente,
+        categoria: fields.categoria,
+        status: fields.status || "realizado",
+        nota: fields.nota || "",
+        pagador: fields.pagador || "",
+      });
+      return { ok: true, item, summary: MonitorSummary.summarize(MonitorApi.getState()) };
+    }
+    if (kind === "trabalho") {
+      const item = await MonitorApi.addTrabalho({
+        data: fields.data,
+        tipo: fields.tipo,
+        local: fields.local || "",
+        pagador: fields.pagador || "",
+        valor_esperado: Number(fields.valor),
+        nota: fields.nota || "",
+      });
+      return { ok: true, item, summary: MonitorSummary.summarize(MonitorApi.getState()) };
+    }
+    throw new Error("Tipo de formulário desconhecido");
+  }
+
+  global.MonitorAgent = { handle, createFromForm, brl };
+})(window);
+  </script>
+  <script>
+const brl = (v) =>
+  (Number(v) || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+const messagesEl = document.getElementById("messages");
+const form = document.getElementById("chat-form");
+const input = document.getElementById("chat-input");
+const setupOverlay = document.getElementById("setup-overlay");
+const modalOverlay = document.getElementById("modal-overlay");
+
+const STATUS_LABEL = {
+  pago: "Pago",
+  parcial: "Parcial",
+  aberto: "Em aberto",
+};
+
+function todayISO() {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+function addBubble(text, who) {
+  const div = document.createElement("div");
+  div.className = `bubble ${who}`;
+  div.textContent = String(text || "").replace(/\*\*(.*?)\*\*/g, "$1");
+  messagesEl.appendChild(div);
+  messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function renderList(el, items, emptyText) {
+  el.innerHTML = "";
+  if (!items.length) {
+    const p = document.createElement("p");
+    p.className = "empty";
+    p.textContent = emptyText;
+    el.appendChild(p);
+    return;
+  }
+  for (const item of items) {
+    const li = document.createElement("li");
+    li.textContent = item;
+    el.appendChild(li);
+  }
+}
+
+function paintSummary(s) {
+  document.getElementById("month-label").textContent = `${String(s.mes).padStart(2, "0")}/${s.ano}`;
+  document.getElementById("m-entrou").textContent = brl(s.entrou);
+  document.getElementById("m-saiu").textContent = brl(s.saiu);
+  document.getElementById("m-conta").textContent = brl(s.sobrou_conta);
+  document.getElementById("m-verdade").textContent = brl(s.sobrou_verdade);
+  document.getElementById("m-pessoal").textContent = brl(s.por_lente.pessoal.saldo);
+  document.getElementById("m-prof").textContent = brl(s.por_lente.profissional.saldo);
+  document.getElementById("m-receber").textContent = brl(s.a_receber);
+  document.getElementById("m-pagar").textContent = brl(s.a_pagar);
+
+  renderList(
+    document.getElementById("list-receber"),
+    (s.trabalhos_abertos || []).map(
+      (t) => `${t.data} · ${t.tipo}${t.pagador ? " · " + t.pagador : ""} · ${brl(t.saldo_receber)}`
+    ),
+    "Nada em aberto"
+  );
+  renderList(
+    document.getElementById("list-pagar"),
+    (s.previstos || [])
+      .filter((l) => l.tipo === "saida")
+      .map((l) => `${l.data_caixa} · ${l.categoria} · ${brl(l.valor)}`),
+    "Nenhuma conta prevista"
+  );
+  renderList(
+    document.getElementById("list-lanc"),
+    (s.lancamentos || []).map(
+      (l) => `${l.data_caixa} · ${l.tipo} · ${l.lente} · ${l.categoria} · ${brl(l.valor)}`
+    ),
+    "Sem lançamentos neste mês"
+  );
+}
+
+function paintTrabalhos(data) {
+  const t = data.totais || {};
+  document.getElementById("t-esperado").textContent = brl(t.esperado);
+  document.getElementById("t-recebido").textContent = brl(t.recebido);
+  document.getElementById("t-aberto").textContent = brl(t.em_aberto);
+  document.getElementById("trabalhos-status").innerHTML = `
+    <span class="badge pago">${t.pago || 0} pagos</span>
+    <span class="badge parcial">${t.parcial || 0} parciais</span>
+    <span class="badge aberto">${t.aberto || 0} em aberto</span>
+  `;
+  const body = document.getElementById("trabalhos-body");
+  const empty = document.getElementById("trabalhos-empty");
+  const rows = data.trabalhos || [];
+  body.innerHTML = "";
+  empty.hidden = rows.length > 0;
+  for (const item of rows) {
+    const tr = document.createElement("tr");
+    const localPagador = [item.local, item.pagador].filter(Boolean).join(" · ") || "—";
+    tr.innerHTML = `
+      <td>${item.data}</td>
+      <td>${item.tipo}</td>
+      <td>${localPagador}</td>
+      <td>${brl(item.valor_esperado)}</td>
+      <td>${brl(item.valor_recebido)}</td>
+      <td><span class="badge ${item.status_recebimento}">${STATUS_LABEL[item.status_recebimento] || item.status_recebimento}</span></td>
+    `;
+    body.appendChild(tr);
+  }
+}
+
+function paintGastos(data) {
+  document.getElementById("g-total").textContent = brl(data.total_periodo);
+  document.getElementById("g-pessoal").textContent = brl(data.por_lente.pessoal || 0);
+  document.getElementById("g-prof").textContent = brl(
+    (data.por_lente.profissional || 0) + (data.por_lente.misto || 0)
+  );
+  document.getElementById("g-meses").textContent = String(data.meses);
+  const bars = document.getElementById("gastos-bars");
+  bars.innerHTML = "";
+  const max = data.max_mes || 1;
+  for (const p of data.periodos || []) {
+    const col = document.createElement("div");
+    col.className = "bar-col";
+    const hPessoal = Math.round((p.pessoal / max) * 140);
+    const hProf = Math.round((p.profissional / max) * 140);
+    col.innerHTML = `
+      <div class="bar-value">${p.total ? brl(p.total).replace(/\s/g, "\u00a0") : "—"}</div>
+      <div class="bar-stack" title="${p.label}: ${brl(p.total)}">
+        <div class="bar-seg profissional" style="height:${hProf}px"></div>
+        <div class="bar-seg pessoal" style="height:${hPessoal}px"></div>
+      </div>
+      <div class="bar-label">${p.label}</div>
+    `;
+    bars.appendChild(col);
+  }
+  const cats = document.getElementById("gastos-cats");
+  cats.innerHTML = "";
+  const catMax = (data.categorias[0] && data.categorias[0].total) || 1;
+  if (!(data.categorias || []).length) {
+    const p = document.createElement("p");
+    p.className = "empty";
+    p.textContent = "Sem gastos no período.";
+    cats.appendChild(p);
+    return;
+  }
+  for (const c of data.categorias) {
+    const li = document.createElement("li");
+    const pct = Math.max(4, Math.round((c.total / catMax) * 100));
+    li.innerHTML = `
+      <span>${c.categoria}</span>
+      <strong>${brl(c.total)}</strong>
+      <div class="cat-track"><div class="cat-fill" style="width:${pct}%"></div></div>
+    `;
+    cats.appendChild(li);
+  }
+}
+
+function paintAll() {
+  const state = MonitorApi.getState();
+  paintSummary(MonitorSummary.summarize(state));
+  paintTrabalhos(MonitorSummary.trabalhosView(state));
+  paintGastos(MonitorSummary.gastosPorPeriodo(state, 6));
+}
+
+async function refreshAll() {
+  await MonitorApi.refresh();
+  paintAll();
+}
+
+function setView(name) {
+  document.querySelectorAll(".view-btn").forEach((btn) => {
+    btn.classList.toggle("active", btn.dataset.view === name);
+  });
+  document.querySelectorAll(".view").forEach((panel) => {
+    const on = panel.id === `view-${name}`;
+    panel.hidden = !on;
+    panel.classList.toggle("active", on);
+  });
+}
+
+document.querySelectorAll(".view-btn").forEach((btn) => {
+  btn.addEventListener("click", () => setView(btn.dataset.view));
+});
+
+function showSetup(force) {
+  const cfg = MonitorApi.getConfig();
+  const urlEl = document.getElementById("cfg-url");
+  const tokenEl = document.getElementById("cfg-token");
+  if (urlEl) urlEl.value = cfg.apiUrl || "";
+  if (tokenEl) tokenEl.value = cfg.apiToken || "";
+  const err = document.getElementById("setup-error");
+  if (err) err.hidden = true;
+  if (force || !MonitorApi.configured()) setupOverlay.hidden = false;
+}
+
+document.getElementById("btn-config").addEventListener("click", () => showSetup(true));
+
+const cfgSave = document.getElementById("cfg-save");
+if (cfgSave) {
+  cfgSave.addEventListener("click", async () => {
+    const url = document.getElementById("cfg-url").value.trim();
+    const token = document.getElementById("cfg-token").value.trim();
+    const err = document.getElementById("setup-error");
+    if (!url || !token) {
+      err.textContent = "Preencha URL e token.";
+      err.hidden = false;
+      return;
+    }
+    MonitorApi.saveConfig(url, token);
+    try {
+      await refreshAll();
+      setupOverlay.hidden = true;
+      addBubble("Conectado à planilha. Pode lançar pelo formulário ou pelo chat.", "bot");
+    } catch (e) {
+      err.textContent =
+        `Falha: ${e.message}. Solução: abra a URL /exec no navegador logado no Google (não use esta página do GitHub Pages).`;
+      err.hidden = false;
+    }
+  });
+}
+
+function openModal(kind) {
+  document.getElementById("f-kind").value = kind;
+  document.getElementById("modal-title").textContent =
+    kind === "ganho" ? "Novo ganho" : kind === "gasto" ? "Novo gasto" : "Novo trabalho";
+  document.getElementById("f-valor").value = "";
+  document.getElementById("f-data").value = todayISO();
+  document.getElementById("f-lente").value = kind === "ganho" ? "profissional" : "pessoal";
+  document.getElementById("f-categoria").value = kind === "ganho" ? "plantao" : "outros";
+  document.getElementById("f-tipo").value = "plantao";
+  document.getElementById("f-pagador").value = "";
+  document.getElementById("f-status").value = "realizado";
+  document.getElementById("f-nota").value = "";
+  document.getElementById("modal-error").hidden = true;
+
+  const isTrabalho = kind === "trabalho";
+  document.getElementById("wrap-lente").hidden = isTrabalho;
+  document.getElementById("wrap-categoria").hidden = isTrabalho;
+  document.getElementById("wrap-status").hidden = isTrabalho;
+  document.getElementById("wrap-tipo").hidden = !isTrabalho;
+  modalOverlay.hidden = false;
+}
+
+document.querySelectorAll("[data-open]").forEach((btn) => {
+  btn.addEventListener("click", () => openModal(btn.dataset.open));
+});
+
+document.getElementById("modal-cancel").addEventListener("click", () => {
+  modalOverlay.hidden = true;
+});
+
+document.getElementById("modal-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const kind = document.getElementById("f-kind").value;
+  const err = document.getElementById("modal-error");
+  try {
+    await MonitorAgent.createFromForm(kind, {
+      valor: document.getElementById("f-valor").value,
+      data: document.getElementById("f-data").value,
+      lente: document.getElementById("f-lente").value,
+      categoria: document.getElementById("f-categoria").value || "outros",
+      status: document.getElementById("f-status").value,
+      tipo: document.getElementById("f-tipo").value,
+      pagador: document.getElementById("f-pagador").value,
+      local: document.getElementById("f-pagador").value,
+      nota: document.getElementById("f-nota").value,
+    });
+    await refreshAll();
+    modalOverlay.hidden = true;
+    addBubble(`Salvo: ${kind}.`, "bot");
+  } catch (ex) {
+    err.textContent = ex.message || String(ex);
+    err.hidden = false;
+  }
+});
+
+async function sendMessage(text) {
+  addBubble(text, "user");
+  const data = await MonitorAgent.handle(text);
+  addBubble(data.reply || "Sem resposta.", "bot");
+  if (data.summary) paintSummary(data.summary);
+  await refreshAll();
+}
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const text = input.value.trim();
+  if (!text) return;
+  input.value = "";
+  input.focus();
+  try {
+    await sendMessage(text);
+  } catch (err) {
+    addBubble(`Falha: ${err.message}`, "bot");
+  }
+});
+
+(async function boot() {
+  if (MonitorApi.isEmbedded && MonitorApi.isEmbedded()) {
+    const btn = document.getElementById("btn-config");
+    if (btn) btn.hidden = true;
+    setupOverlay.hidden = true;
+    try {
+      await refreshAll();
+      addBubble(
+        "Olá. Monitor conectado à sua planilha.\nUse + Ganho / + Gasto / + Trabalho ou o chat.",
+        "bot"
+      );
+    } catch (err) {
+      addBubble(`Não consegui carregar: ${err.message}\nConfira SPREADSHEET_ID e se rodou setupSheets().`, "bot");
+    }
+    return;
+  }
+
+  showSetup(false);
+  if (!MonitorApi.configured()) {
+    addBubble(
+      "Este GitHub Pages só funciona se o Apps Script estiver como “Qualquer pessoa”.\nMais fácil: abra a URL /exec do Apps Script no celular (logado no Google).",
+      "bot"
+    );
+    return;
+  }
+  try {
+    await refreshAll();
+    setupOverlay.hidden = true;
+    addBubble(
+      "Olá. Sou o Monitor Financeiro.\nUse + Ganho / + Gasto / + Trabalho ou o chat — eu confirmo antes de gravar no chat.",
+      "bot"
+    );
+  } catch (err) {
+    showSetup(true);
+    addBubble(`Não consegui carregar os dados: ${err.message}`, "bot");
+  }
+})();
+  </script>
 </body>
 </html>

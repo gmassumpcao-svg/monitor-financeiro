@@ -12,9 +12,12 @@ guarda dados    ←    lança gastos / plantões
 
 ## 1. Arquivos no Apps Script
 
-Cole **Code.gs** + HTMLs com estes nomes:
+Cole só estes dois arquivos:
 
-`Index` · `Styles` · `ApiJs` · `SummaryJs` · `AgentJs` · `AppJs`
+- **Code.gs** (backend / API)
+- **Index.html** (UI completa: CSS + JS embutidos)
+
+Não precisa de `Styles`, `ApiJs`, `SummaryJs`, `AgentJs` nem `AppJs`.
 
 ## 2. Propriedades do script
 

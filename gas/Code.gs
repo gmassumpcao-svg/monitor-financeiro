@@ -2,7 +2,7 @@
  * Monitor Financeiro — App + API sobre Google Sheets
  *
  * MODO RECOMENDADO (celular):
- * 1. Cole Code.gs e os arquivos HTML (Index, Styles, ApiJs, SummaryJs, AgentJs, AppJs)
+ * 1. Cole Code.gs + Index.html (UI completa num único HTML)
  * 2. Propriedades: SPREADSHEET_ID + API_TOKEN
  * 3. Execute setupSheets() uma vez
  * 4. Implantar > App da Web
@@ -41,9 +41,6 @@ var SHEETS = {
   meta: ["key", "value"],
 };
 
-function include(filename) {
-  return HtmlService.createHtmlOutputFromFile(filename).getContent();
-}
 
 function setupSheets() {
   var ss = getSpreadsheet_();
@@ -80,8 +77,7 @@ function doGet(e) {
   }
 
   // App embutido — abre no celular logado no Google (sem CORS)
-  return HtmlService.createTemplateFromFile("Index")
-    .evaluate()
+  return HtmlService.createHtmlOutputFromFile("Index")
     .setTitle("Monitor Financeiro")
     .addMetaTag("viewport", "width=device-width, initial-scale=1")
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
