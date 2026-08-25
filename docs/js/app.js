@@ -205,7 +205,7 @@ document.getElementById("cfg-save").addEventListener("click", async () => {
     setupOverlay.hidden = true;
     addBubble("Conectado à planilha. Pode lançar pelo formulário ou pelo chat.", "bot");
   } catch (e) {
-    err.textContent = `Falha ao conectar: ${e.message}`;
+    err.textContent = `Falha ao conectar: ${e.message}. Depois de atualizar o Code.gs, faça Nova versão na implantação (acesso: Qualquer pessoa).`;
     err.hidden = false;
   }
 });

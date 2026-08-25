@@ -1,4 +1,4 @@
-/** Cliente da API Google Apps Script (Sheets). */
+/** Cliente da API Google Apps Script (Sheets) via JSONP — evita CORS/Failed to fetch. */
 (function (global) {
   const LS_URL = "monitor_api_url";
   const LS_TOKEN = "monitor_api_token";
@@ -12,7 +12,7 @@
   }
 
   function saveConfig(apiUrl, apiToken) {
-    localStorage.setItem(LS_URL, apiUrl.trim());
+    localStorage.setItem(LS_URL, apiUrl.trim().replace(/\?.*$/, ""));
     localStorage.setItem(LS_TOKEN, apiToken.trim());
   }
 
@@ -21,25 +21,74 @@
     return Boolean(c.apiUrl && c.apiToken);
   }
 
+  function jsonp(apiUrl, params) {
+    return new Promise((resolve, reject) => {
+      const callbackName = "gas_cb_" + Date.now() + "_" + Math.floor(Math.random() * 1e6);
+      const script = document.createElement("script");
+      const timer = setTimeout(() => {
+        cleanup();
+        reject(new Error("Tempo esgotado. Confira a URL /exec e a implantação (Qualquer pessoa)."));
+      }, 25000);
+
+      function cleanup() {
+        clearTimeout(timer);
+        try {
+          delete window[callbackName];
+        } catch (e) {
+          window[callbackName] = undefined;
+        }
+        if (script.parentNode) script.parentNode.removeChild(script);
+      }
+
+      window[callbackName] = (data) => {
+        cleanup();
+        resolve(data);
+      };
+
+      script.onerror = () => {
+        cleanup();
+        reject(
+          new Error(
+            "Falha ao carregar o Apps Script. Use a URL que termina em /exec, acesso “Qualquer pessoa”, e faça Nova versão após atualizar o Code.gs."
+          )
+        );
+      };
+
+      const q = new URLSearchParams();
+      Object.keys(params).forEach((key) => {
+        const val = params[key];
+        if (val === undefined) return;
+        if (val === null) {
+          q.set(key, "null");
+          return;
+        }
+        if (typeof val === "object") {
+          q.set(key, JSON.stringify(val));
+          return;
+        }
+        q.set(key, String(val));
+      });
+      q.set("callback", callbackName);
+
+      const base = apiUrl.replace(/\?.*$/, "").replace(/\/$/, "");
+      script.src = base + "?" + q.toString();
+      document.body.appendChild(script);
+    });
+  }
+
   async function call(action, extra = {}) {
     const { apiUrl, apiToken } = getConfig();
     if (!apiUrl || !apiToken) throw new Error("Configure a URL da API e o token.");
+    if (!/\/exec$/i.test(apiUrl.replace(/\?.*$/, ""))) {
+      throw new Error("A URL deve terminar em /exec (não use /dev).");
+    }
 
-    const payload = { token: apiToken, action, ...extra };
-    const res = await fetch(apiUrl, {
-      method: "POST",
-      // text/plain evita preflight CORS no Apps Script
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify(payload),
-      redirect: "follow",
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    if (!data.ok) throw new Error(data.error || "Erro na API");
+    const params = { token: apiToken, action, ...extra };
+    const data = await jsonp(apiUrl, params);
+    if (!data || !data.ok) throw new Error((data && data.error) || "Erro na API");
     return data;
   }
 
-  /** Estado em memória sincronizado com a planilha */
   let state = {
     lancamentos: [],
     trabalhos: [],

@@ -63,7 +63,16 @@ function setupSheets() {
 }
 
 function doGet(e) {
-  return handle_(e && e.parameter ? e.parameter : {});
+  var params = (e && e.parameter) || {};
+  // payload/name podem vir como JSON string na query (JSONP)
+  params = normalizeParams_(params);
+  var result = dispatch_(params);
+  if (params.callback) {
+    return ContentService.createTextOutput(
+      params.callback + "(" + JSON.stringify(result) + ")"
+    ).setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+  return json_(result);
 }
 
 function doPost(e) {
@@ -74,23 +83,43 @@ function doPost(e) {
   } catch (err) {
     return json_({ ok: false, error: "JSON inválido" });
   }
-  return handle_(body);
+  return json_(dispatch_(normalizeParams_(body)));
 }
 
-function handle_(req) {
+function normalizeParams_(req) {
+  var out = {};
+  for (var k in req) {
+    if (Object.prototype.hasOwnProperty.call(req, k)) out[k] = req[k];
+  }
+  if (typeof out.payload === "string") {
+    if (out.payload === "" || out.payload === "null") {
+      out.payload = null;
+    } else {
+      try {
+        out.payload = JSON.parse(out.payload);
+      } catch (err) {
+        // mantém string se não for JSON
+      }
+    }
+  }
+  return out;
+}
+
+/** Retorna objeto JS (não ContentService). */
+function dispatch_(req) {
   try {
     if (!checkToken_(req.token)) {
-      return json_({ ok: false, error: "Token inválido" });
+      return { ok: false, error: "Token inválido" };
     }
     var action = String(req.action || "getAll");
-    if (action === "setup") return json_(setupSheets());
-    if (action === "getAll") return json_({ ok: true, data: getAll_() });
-    if (action === "addLancamento") return json_({ ok: true, item: addLancamento_(req.payload || {}) });
-    if (action === "addTrabalho") return json_({ ok: true, item: addTrabalho_(req.payload || {}) });
-    if (action === "addVinculo") return json_({ ok: true, item: addVinculo_(req.payload || {}) });
+    if (action === "setup") return setupSheets();
+    if (action === "getAll") return { ok: true, data: getAll_() };
+    if (action === "addLancamento") return { ok: true, item: addLancamento_(req.payload || {}) };
+    if (action === "addTrabalho") return { ok: true, item: addTrabalho_(req.payload || {}) };
+    if (action === "addVinculo") return { ok: true, item: addVinculo_(req.payload || {}) };
     if (action === "setPending") {
       setMeta_("pending", req.payload == null ? "" : JSON.stringify(req.payload));
-      return json_({ ok: true });
+      return { ok: true };
     }
     if (action === "setOnboarding") {
       var profile = {
@@ -99,14 +128,14 @@ function handle_(req) {
         onboarding_done: 1,
       };
       setMeta_("profile", JSON.stringify(profile));
-      return json_({ ok: true, profile: profile });
+      return { ok: true, profile: profile };
     }
     if (action === "applyPagamentoVinculado") {
-      return json_({ ok: true, result: applyPagamentoVinculado_(req.payload || {}) });
+      return { ok: true, result: applyPagamentoVinculado_(req.payload || {}) };
     }
-    return json_({ ok: false, error: "Ação desconhecida: " + action });
+    return { ok: false, error: "Ação desconhecida: " + action };
   } catch (err) {
-    return json_({ ok: false, error: String(err && err.message ? err.message : err) });
+    return { ok: false, error: String(err && err.message ? err.message : err) };
   }
 }
 
