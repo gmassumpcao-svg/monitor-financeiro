@@ -28,9 +28,35 @@
 
   function callEmbedded(action, extra) {
     return new Promise((resolve, reject) => {
+      let settled = false;
+      const timer = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        reject(
+          new Error(
+            "Apps Script não respondeu (timeout). Autorize o script, confira SPREADSHEET_ID/API_TOKEN e se Index.html está completo (CSS+JS embutidos)."
+          )
+        );
+      }, 20000);
+
+      function done(fn) {
+        return function (value) {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          fn(value);
+        };
+      }
+
       google.script.run
-        .withSuccessHandler((data) => resolve(data))
-        .withFailureHandler((err) => reject(new Error(err && err.message ? err.message : String(err))))
+        .withSuccessHandler(
+          done((data) => resolve(data))
+        )
+        .withFailureHandler(
+          done((err) =>
+            reject(new Error(err && err.message ? err.message : String(err)))
+          )
+        )
         .apiCall(Object.assign({ action: action }, extra || {}));
     });
   }

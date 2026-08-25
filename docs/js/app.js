@@ -19,11 +19,21 @@ function todayISO() {
 }
 
 function addBubble(text, who) {
+  if (!messagesEl) return;
   const div = document.createElement("div");
   div.className = `bubble ${who}`;
   div.textContent = String(text || "").replace(/\*\*(.*?)\*\*/g, "$1");
   messagesEl.appendChild(div);
   messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function showBootError(msg) {
+  const el = document.getElementById("boot-error");
+  if (el) {
+    el.hidden = false;
+    el.textContent = msg;
+  }
+  addBubble(msg, "bot");
 }
 
 function renderList(el, items, emptyText) {
@@ -211,8 +221,39 @@ if (cfgSave) {
       addBubble("Conectado à planilha. Pode lançar pelo formulário ou pelo chat.", "bot");
     } catch (e) {
       err.textContent =
-        `Falha: ${e.message}. Solução: abra a URL /exec no navegador logado no Google (não use esta página do GitHub Pages).`;
+        `Falha: ${e.message}. Confira se o App da Web está como “Qualquer pessoa” (anônimo) e se o token bate com API_TOKEN. Alternativa: abra a URL /exec logado no Google.`;
       err.hidden = false;
+    }
+  });
+}
+
+const cfgTest = document.getElementById("cfg-test");
+if (cfgTest) {
+  cfgTest.addEventListener("click", async () => {
+    const url = document.getElementById("cfg-url").value.trim();
+    const token = document.getElementById("cfg-token").value.trim();
+    const err = document.getElementById("setup-error");
+    if (!url || !token) {
+      err.textContent = "Preencha URL e token para testar.";
+      err.hidden = false;
+      return;
+    }
+    MonitorApi.saveConfig(url, token);
+    err.hidden = true;
+    cfgTest.disabled = true;
+    cfgTest.textContent = "Testando…";
+    try {
+      await MonitorApi.call("getAll");
+      err.style.color = "#2f6b4f";
+      err.textContent = "OK — API respondeu. Clique em “Salvar e abrir”.";
+      err.hidden = false;
+    } catch (e) {
+      err.style.color = "#9a4a22";
+      err.textContent = `Teste falhou: ${e.message}`;
+      err.hidden = false;
+    } finally {
+      cfgTest.disabled = false;
+      cfgTest.textContent = "Testar URL";
     }
   });
 }
@@ -297,7 +338,8 @@ form.addEventListener("submit", async (e) => {
   if (MonitorApi.isEmbedded && MonitorApi.isEmbedded()) {
     const btn = document.getElementById("btn-config");
     if (btn) btn.hidden = true;
-    setupOverlay.hidden = true;
+    if (setupOverlay) setupOverlay.hidden = true;
+    addBubble("Carregando dados da planilha…", "bot");
     try {
       await refreshAll();
       addBubble(
@@ -305,7 +347,9 @@ form.addEventListener("submit", async (e) => {
         "bot"
       );
     } catch (err) {
-      addBubble(`Não consegui carregar: ${err.message}\nConfira SPREADSHEET_ID e se rodou setupSheets().`, "bot");
+      showBootError(
+        `Não consegui carregar: ${err.message}. Confira SPREADSHEET_ID, API_TOKEN, setupSheets() e se o Index.html colado tem milhares de linhas (CSS+JS embutidos).`
+      );
     }
     return;
   }
@@ -313,11 +357,14 @@ form.addEventListener("submit", async (e) => {
   showSetup(false);
   if (!MonitorApi.configured()) {
     addBubble(
-      "Este GitHub Pages só funciona se o Apps Script estiver como “Qualquer pessoa”.\nMais fácil: abra a URL /exec do Apps Script no celular (logado no Google).",
+      "Cole a URL /exec + API_TOKEN abaixo.\n" +
+        "O App da Web precisa estar como “Qualquer pessoa” (anônimo). A planilha pode ficar privada.\n" +
+        "Alternativa sem token: abra a URL /exec no celular logado no Google.",
       "bot"
     );
     return;
   }
+  addBubble("Carregando dados…", "bot");
   try {
     await refreshAll();
     setupOverlay.hidden = true;

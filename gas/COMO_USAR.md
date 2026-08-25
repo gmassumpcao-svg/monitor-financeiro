@@ -1,53 +1,40 @@
-# Como o médico usa o Monitor (você NÃO precisa ser o usuário)
+# Duas formas de usar (médico no celular)
 
-A planilha e o Apps Script ficam **na sua conta Google** (você é o “dono” técnico).  
-O **médico** usa no celular com a **conta Google dele**.
+A planilha fica **na sua conta** e pode continuar **privada**.  
+O que muda é só a implantação do Apps Script.
 
-```text
-Você (dono)          Médico (usuário)
-cria planilha   →    abre /exec no celular
-implanta script →    logado no Gmail DELE
-guarda dados    ←    lança gastos / plantões
-```
+---
 
-## 1. Arquivos no Apps Script
+## Opção A — GitHub Pages (sem login Google no celular)
 
-Cole só estes dois arquivos:
+Ideal se o médico **não** deve usar conta Google.
 
-- **Code.gs** (backend / API)
-- **Index.html** (UI completa: CSS + JS embutidos)
+1. Arquivos no Apps Script: **Code.gs** + **Index.html** completo (`gas/Index.html`, ~1900+ linhas).
+2. Propriedades: `SPREADSHEET_ID`, `API_TOKEN`
+3. Rodar `setupSheets()` uma vez
+4. Implantar App da Web:
+   - Executar como: **Eu**
+   - Quem tem acesso: **Qualquer pessoa** ← anônimo (não “com Conta do Google”)
+   - **Nova versão** → Implantar
+5. Teste em aba anônima:
+   `URL/exec?action=getAll&token=SEU_TOKEN&callback=cb`  
+   Deve aparecer `cb({...})`, **não** tela de login.
+6. No site do GitHub Pages: cole URL `/exec` + token → Salvar
 
-Não precisa de `Styles`, `ApiJs`, `SummaryJs`, `AgentJs` nem `AppJs`.
+**Não** deixe a planilha pública. Com “Executar como: Eu”, o script acessa a planilha privada.
 
-## 2. Propriedades do script
+---
 
-| Chave | Valor |
-|-------|--------|
-| `SPREADSHEET_ID` | ID da planilha |
-| `API_TOKEN` | segredo qualquer (ex. `openssl rand -hex 24`) |
-| `ALLOWED_EMAILS` | e-mail Google do médico, ex. `medico@gmail.com` (opcional, recomendado) |
+## Opção B — Abrir `/exec` (UI dentro do Apps Script)
 
-## 3. `setupSheets` uma vez
+1. Cole o **Index.html completo** (com CSS e JS dentro — se ficar sem estilo e com “—”, o HTML está incompleto)
+2. Acesso: **Qualquer pessoa com Conta do Google** (ou Só eu)
+3. Médico abre `/exec` logado no **Gmail dele**
+4. Opcional: `ALLOWED_EMAILS=medico@gmail.com`
 
-## 4. Implantação (importante)
+---
 
-1. **Implantar → Nova implantação → App da Web**
-2. **Executar como:** **Eu** (sua conta — grava na sua planilha)
-3. **Quem tem acesso:** **Qualquer pessoa com Conta do Google**  
-   (não use “Só eu”, senão só você abre)
-4. Copie a URL que termina em `/exec`
+## Se o `/exec` abrir sem cores e com traços “—”
 
-## 5. O que enviar para o médico
-
-1. A URL `/exec`
-2. Pedido: “Entre no Gmail **seu** e abra este link; favorite na tela inicial”
-
-Ele **não** precisa do GitHub Pages nem do `API_TOKEN`.
-
-## Por que o GitHub Pages dá Failed to fetch?
-
-Porque o script está pedindo login Google. Para o médico, o caminho certo é a **URL `/exec`**, não o Pages.
-
-## Se quiser Pages público depois
-
-Aí a implantação precisa ser **Qualquer pessoa** (anônimo). Só faça isso se aceitar o risco de quem tiver URL+token gravar na planilha.
+Você colou um Index.html **curto** (só o esqueleto).  
+Substitua pelo arquivo `gas/Index.html` do projeto (arquivo grande) e faça **Nova versão**.

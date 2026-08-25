@@ -1,16 +1,21 @@
 /**
  * Monitor Financeiro — App + API sobre Google Sheets
  *
- * MODO RECOMENDADO (celular):
- * 1. Cole Code.gs + Index.html (UI completa num único HTML)
- * 2. Propriedades: SPREADSHEET_ID + API_TOKEN
- * 3. Execute setupSheets() uma vez
- * 4. Implantar > App da Web
- *      Executar como: Eu
- *      Quem tem acesso: Qualquer pessoa com Conta do Google  (ou “Só eu”)
- * 5. Abra a URL /exec no celular (logado no Google) — é o próprio app
+ * IMPORTANTE: cole Code.gs + Index.html COMPLETO (CSS+JS embutidos).
+ * NÃO use Index com <?!= include('Styles') ?> + createHtmlOutputFromFile —
+ * isso deixa a UI sem estilo e sem JS (métricas eternamente "—").
  *
- * GitHub Pages só funciona se o acesso for “Qualquer pessoa” (anônimo).
+ * MODO A — App embutido (/exec no celular, logado no Google):
+ * 1. Propriedades: SPREADSHEET_ID + API_TOKEN (+ ALLOWED_EMAILS opcional)
+ * 2. setupSheets() uma vez
+ * 3. Implantar > App da Web > Executar como: Eu
+ *      Quem tem acesso: “Qualquer pessoa com Conta do Google” (ou “Só eu”)
+ * 4. Abra a URL /exec — google.script.run chama apiCall (token injetado no servidor)
+ *
+ * MODO B — GitHub Pages + API anônima:
+ *      Quem tem acesso: “Qualquer pessoa” (anônimo, NÃO “com Conta Google”)
+ *      Cole /exec + API_TOKEN no overlay do Pages.
+ * A planilha pode ficar PRIVADA nos dois modos; o que muda é só o App da Web.
  */
 
 var SHEETS = {

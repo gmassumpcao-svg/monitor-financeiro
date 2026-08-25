@@ -3,11 +3,11 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <base target="_top" />
   <title>Monitor Financeiro</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Manrope:wght@400;600;700&display=swap" rel="stylesheet" />
+  <base target="_top" />
   <style>
 /* Palette from clinic reference: wood, terracotta, cocoa, seafoam */
 :root {
@@ -132,7 +132,7 @@ body {
 }
 
 .panel {
-  background: color-mix(in srgb, var(--panel) 94%, white);
+  background: #faf6f1;
   border: 1px solid var(--line);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
@@ -576,10 +576,40 @@ ul li {
   .panel { min-height: auto; }
   .messages { max-height: 42vh; }
 }
+
   </style>
 </head>
 <body>
-<div id="setup-overlay" class="setup-overlay" hidden></div>
+  <div id="setup-overlay" class="setup-overlay" hidden>
+    <div class="setup-card">
+      <h2>Conectar ao Google Sheets</h2>
+      <p class="view-sub">
+        Cole a URL <code>/exec</code> do Apps Script e o <code>API_TOKEN</code>.
+        A planilha pode (e deve) ficar <strong>privada</strong> — o que precisa ser público é só o
+        <strong>App da Web</strong> do script.
+      </p>
+      <ol class="hint" style="padding-left:1.2rem;line-height:1.45">
+        <li>Apps Script → Implantar → Gerenciar → ✏️</li>
+        <li><strong>Executar como:</strong> Eu</li>
+        <li><strong>Quem tem acesso:</strong> Qualquer pessoa <em>(anônimo — não “com Conta Google”)</em></li>
+        <li>Nova versão → Implantar → copiar URL <code>/exec</code></li>
+      </ol>
+      <div class="field">
+        <label for="cfg-url">URL da API (/exec)</label>
+        <input id="cfg-url" type="url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off" />
+      </div>
+      <div class="field">
+        <label for="cfg-token">Token (API_TOKEN)</label>
+        <input id="cfg-token" type="password" placeholder="seu segredo" autocomplete="off" />
+      </div>
+      <p id="setup-error" class="hint" style="color:#9a4a22" hidden></p>
+      <div class="modal-actions">
+        <button type="button" class="btn-ghost" id="cfg-test">Testar URL</button>
+        <button type="button" class="btn-primary" id="cfg-save">Salvar e abrir</button>
+      </div>
+      <p class="hint">Teste: na aba anônima, a URL com <code>?action=getAll&amp;token=SEU_TOKEN&amp;callback=cb</code> deve mostrar <code>cb({...})</code>, não login do Google.</p>
+    </div>
+  </div>
 
   <div id="modal-overlay" class="modal-overlay" hidden>
     <div class="modal-card">
@@ -654,7 +684,7 @@ ul li {
       </nav>
       <div class="top-tools">
         <p id="month-label" class="month-label"></p>
-        <button type="button" class="btn-ghost" id="btn-config" title="Reconfigurar API" hidden>API</button>
+        <button type="button" class="btn-ghost" id="btn-config" title="Reconfigurar API">API</button>
       </div>
     </header>
 
@@ -669,14 +699,32 @@ ul li {
         <div id="view-caixa" class="view active">
           <h2>Caixa do mês</h2>
           <div class="metrics">
-            <div><span class="label">Entrou</span><strong id="m-entrou">—</strong></div>
-            <div><span class="label">Saiu</span><strong id="m-saiu">—</strong></div>
-            <div class="highlight"><span class="label">Sobrou na conta</span><strong id="m-conta">—</strong></div>
-            <div class="highlight truth"><span class="label">Sobrou de verdade</span><strong id="m-verdade">—</strong></div>
+            <div>
+              <span class="label">Entrou</span>
+              <strong id="m-entrou">—</strong>
+            </div>
+            <div>
+              <span class="label">Saiu</span>
+              <strong id="m-saiu">—</strong>
+            </div>
+            <div class="highlight">
+              <span class="label">Sobrou na conta</span>
+              <strong id="m-conta">—</strong>
+            </div>
+            <div class="highlight truth">
+              <span class="label">Sobrou de verdade</span>
+              <strong id="m-verdade">—</strong>
+            </div>
           </div>
           <div class="lenses">
-            <div><span class="label">Pessoal</span><strong id="m-pessoal">—</strong></div>
-            <div><span class="label">Profissional</span><strong id="m-prof">—</strong></div>
+            <div>
+              <span class="label">Pessoal</span>
+              <strong id="m-pessoal">—</strong>
+            </div>
+            <div>
+              <span class="label">Profissional</span>
+              <strong id="m-prof">—</strong>
+            </div>
           </div>
           <div class="lists">
             <div>
@@ -699,23 +747,36 @@ ul li {
             <h2>Trabalhos realizados</h2>
             <p class="view-sub">Consultas, plantões e procedimentos — e o que já foi pago</p>
           </div>
-          <div class="metrics three">
-            <div><span class="label">Esperado</span><strong id="t-esperado">—</strong></div>
-            <div class="highlight mint"><span class="label">Recebido</span><strong id="t-recebido">—</strong></div>
-            <div class="highlight"><span class="label">Em aberto</span><strong id="t-aberto">—</strong></div>
+          <div class="metrics three" id="trabalhos-metrics">
+            <div>
+              <span class="label">Esperado</span>
+              <strong id="t-esperado">—</strong>
+            </div>
+            <div class="highlight mint">
+              <span class="label">Recebido</span>
+              <strong id="t-recebido">—</strong>
+            </div>
+            <div class="highlight">
+              <span class="label">Em aberto</span>
+              <strong id="t-aberto">—</strong>
+            </div>
           </div>
           <div class="status-row" id="trabalhos-status"></div>
           <div class="table-wrap">
-            <table class="data-table">
+            <table class="data-table" aria-label="Lista de trabalhos">
               <thead>
                 <tr>
-                  <th>Data</th><th>Tipo</th><th>Local / pagador</th>
-                  <th>Esperado</th><th>Recebido</th><th>Status</th>
+                  <th>Data</th>
+                  <th>Tipo</th>
+                  <th>Local / pagador</th>
+                  <th>Esperado</th>
+                  <th>Recebido</th>
+                  <th>Status</th>
                 </tr>
               </thead>
               <tbody id="trabalhos-body"></tbody>
             </table>
-            <p id="trabalhos-empty" class="empty" hidden>Nenhum trabalho ainda.</p>
+            <p id="trabalhos-empty" class="empty" hidden>Nenhum trabalho ainda. Use + Trabalho ou o chat.</p>
           </div>
         </div>
 
@@ -725,13 +786,25 @@ ul li {
             <p class="view-sub">Últimos 6 meses · pessoal e profissional</p>
           </div>
           <div class="metrics">
-            <div class="highlight"><span class="label">Total no período</span><strong id="g-total">—</strong></div>
-            <div><span class="label">Pessoal</span><strong id="g-pessoal">—</strong></div>
-            <div><span class="label">Profissional</span><strong id="g-prof">—</strong></div>
-            <div class="highlight mint"><span class="label">Meses</span><strong id="g-meses">6</strong></div>
+            <div class="highlight">
+              <span class="label">Total no período</span>
+              <strong id="g-total">—</strong>
+            </div>
+            <div>
+              <span class="label">Pessoal</span>
+              <strong id="g-pessoal">—</strong>
+            </div>
+            <div>
+              <span class="label">Profissional</span>
+              <strong id="g-prof">—</strong>
+            </div>
+            <div class="highlight mint">
+              <span class="label">Meses</span>
+              <strong id="g-meses">6</strong>
+            </div>
           </div>
           <h3>Por mês</h3>
-          <div id="gastos-bars" class="bars"></div>
+          <div id="gastos-bars" class="bars" aria-label="Gráfico de gastos mensais"></div>
           <div class="legend">
             <span><i class="pessoal"></i>Pessoal</span>
             <span><i class="profissional"></i>Profissional</span>
@@ -748,9 +821,13 @@ ul li {
         </div>
         <div id="messages" class="messages" role="log" aria-live="polite"></div>
         <form id="chat-form" class="composer">
-          <input id="chat-input" type="text" autocomplete="off"
-            placeholder="Ex.: Caiu 3600 da Unimed referente a junho"
-            aria-label="Mensagem para o agente" />
+          <input
+            id="chat-input"
+            type="text"
+            autocomplete="off"
+            placeholder='Ex.: Caiu 3600 da Unimed referente a junho'
+            aria-label="Mensagem para o agente"
+          />
           <button type="submit">Enviar</button>
         </form>
         <p class="hint">Responda <strong>sim</strong> ou <strong>não</strong> para confirmar.</p>
@@ -792,9 +869,35 @@ ul li {
 
   function callEmbedded(action, extra) {
     return new Promise((resolve, reject) => {
+      let settled = false;
+      const timer = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        reject(
+          new Error(
+            "Apps Script não respondeu (timeout). Autorize o script, confira SPREADSHEET_ID/API_TOKEN e se Index.html está completo (CSS+JS embutidos)."
+          )
+        );
+      }, 20000);
+
+      function done(fn) {
+        return function (value) {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          fn(value);
+        };
+      }
+
       google.script.run
-        .withSuccessHandler((data) => resolve(data))
-        .withFailureHandler((err) => reject(new Error(err && err.message ? err.message : String(err))))
+        .withSuccessHandler(
+          done((data) => resolve(data))
+        )
+        .withFailureHandler(
+          done((err) =>
+            reject(new Error(err && err.message ? err.message : String(err)))
+          )
+        )
         .apiCall(Object.assign({ action: action }, extra || {}));
     });
   }
@@ -944,6 +1047,7 @@ ul li {
     applyPagamentoVinculado,
   };
 })(window);
+
   </script>
   <script>
 /** Resumos: caixa, trabalhos, gastos (port de app/summary.py + trechos de db). */
@@ -1147,6 +1251,7 @@ ul li {
     listLancamentos,
   };
 })(window);
+
   </script>
   <script>
 /** Agente por regras em português (port de app/agent.py). */
@@ -1601,6 +1706,7 @@ ul li {
 
   global.MonitorAgent = { handle, createFromForm, brl };
 })(window);
+
   </script>
   <script>
 const brl = (v) =>
@@ -1624,11 +1730,21 @@ function todayISO() {
 }
 
 function addBubble(text, who) {
+  if (!messagesEl) return;
   const div = document.createElement("div");
   div.className = `bubble ${who}`;
   div.textContent = String(text || "").replace(/\*\*(.*?)\*\*/g, "$1");
   messagesEl.appendChild(div);
   messagesEl.scrollTop = messagesEl.scrollHeight;
+}
+
+function showBootError(msg) {
+  const el = document.getElementById("boot-error");
+  if (el) {
+    el.hidden = false;
+    el.textContent = msg;
+  }
+  addBubble(msg, "bot");
 }
 
 function renderList(el, items, emptyText) {
@@ -1816,8 +1932,39 @@ if (cfgSave) {
       addBubble("Conectado à planilha. Pode lançar pelo formulário ou pelo chat.", "bot");
     } catch (e) {
       err.textContent =
-        `Falha: ${e.message}. Solução: abra a URL /exec no navegador logado no Google (não use esta página do GitHub Pages).`;
+        `Falha: ${e.message}. Confira se o App da Web está como “Qualquer pessoa” (anônimo) e se o token bate com API_TOKEN. Alternativa: abra a URL /exec logado no Google.`;
       err.hidden = false;
+    }
+  });
+}
+
+const cfgTest = document.getElementById("cfg-test");
+if (cfgTest) {
+  cfgTest.addEventListener("click", async () => {
+    const url = document.getElementById("cfg-url").value.trim();
+    const token = document.getElementById("cfg-token").value.trim();
+    const err = document.getElementById("setup-error");
+    if (!url || !token) {
+      err.textContent = "Preencha URL e token para testar.";
+      err.hidden = false;
+      return;
+    }
+    MonitorApi.saveConfig(url, token);
+    err.hidden = true;
+    cfgTest.disabled = true;
+    cfgTest.textContent = "Testando…";
+    try {
+      await MonitorApi.call("getAll");
+      err.style.color = "#2f6b4f";
+      err.textContent = "OK — API respondeu. Clique em “Salvar e abrir”.";
+      err.hidden = false;
+    } catch (e) {
+      err.style.color = "#9a4a22";
+      err.textContent = `Teste falhou: ${e.message}`;
+      err.hidden = false;
+    } finally {
+      cfgTest.disabled = false;
+      cfgTest.textContent = "Testar URL";
     }
   });
 }
@@ -1902,7 +2049,8 @@ form.addEventListener("submit", async (e) => {
   if (MonitorApi.isEmbedded && MonitorApi.isEmbedded()) {
     const btn = document.getElementById("btn-config");
     if (btn) btn.hidden = true;
-    setupOverlay.hidden = true;
+    if (setupOverlay) setupOverlay.hidden = true;
+    addBubble("Carregando dados da planilha…", "bot");
     try {
       await refreshAll();
       addBubble(
@@ -1910,7 +2058,9 @@ form.addEventListener("submit", async (e) => {
         "bot"
       );
     } catch (err) {
-      addBubble(`Não consegui carregar: ${err.message}\nConfira SPREADSHEET_ID e se rodou setupSheets().`, "bot");
+      showBootError(
+        `Não consegui carregar: ${err.message}. Confira SPREADSHEET_ID, API_TOKEN, setupSheets() e se o Index.html colado tem milhares de linhas (CSS+JS embutidos).`
+      );
     }
     return;
   }
@@ -1918,11 +2068,14 @@ form.addEventListener("submit", async (e) => {
   showSetup(false);
   if (!MonitorApi.configured()) {
     addBubble(
-      "Este GitHub Pages só funciona se o Apps Script estiver como “Qualquer pessoa”.\nMais fácil: abra a URL /exec do Apps Script no celular (logado no Google).",
+      "Cole a URL /exec + API_TOKEN abaixo.\n" +
+        "O App da Web precisa estar como “Qualquer pessoa” (anônimo). A planilha pode ficar privada.\n" +
+        "Alternativa sem token: abra a URL /exec no celular logado no Google.",
       "bot"
     );
     return;
   }
+  addBubble("Carregando dados…", "bot");
   try {
     await refreshAll();
     setupOverlay.hidden = true;
@@ -1935,6 +2088,7 @@ form.addEventListener("submit", async (e) => {
     addBubble(`Não consegui carregar os dados: ${err.message}`, "bot");
   }
 })();
+
   </script>
 </body>
 </html>
